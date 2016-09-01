@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<cocktail-provider xmlns:http="http://schemas.android.com/apk/res/android"
+    configure="nallapareddy.com.bookmarksedgepanel.activity.ConfigureActivity"
+    description = "@string/description"
+    permitVisibilityChanged="true"
+    launchOnClick="nallapareddy.com.bookmarksedgepanel.activity.ConfigureActivity"
+    label = "@string/label"
+    cocktailWidth="550"
+    updatePeriodMills="1800000"
+    previewImage="@drawable/preview"/>

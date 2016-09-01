@@ -1,0 +1,11 @@
+<resources>
+    <string name="app_name">BookmarksEdgePanel</string>
+    <string name="description">Save your favorite bookmarks to open easily</string>
+    <string name="label">Bookmarks Edge</string>
+    <string name="add_bookmark">Add</string>
+    <string name="delete_bookmark">Delete</string>
+    <string name="add_bookmark_title">Add bookmark</string>
+    <string name="bookmark_url_hint">URL</string>
+    <string name="favicon_image">favicon</string>
+    <string name="error_url">Invalid URL</string>
+</resources>
