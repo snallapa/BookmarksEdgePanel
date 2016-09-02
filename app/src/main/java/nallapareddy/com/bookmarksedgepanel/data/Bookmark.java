@@ -10,6 +10,7 @@ public class Bookmark {
     private boolean canceled;
     private String faviconUrl;
     private String shortUrl;
+    private boolean tryHttp;
 
     public Bookmark(Uri uri) {
         this.uri = uri;
@@ -68,8 +69,8 @@ public class Bookmark {
     public void setFaviconUrl(Uri uri) {
         String uriString = uri.toString();
         uriString = uriString.replace("http://", "").replace("https://", "");
-        faviconUrl = "https://www.google.com/s2/favicons?domain_url=http%3A%2F%2F" + uriString;
-        //higher quality version needs change to picasso faviconUrl = "https://icons.better-idea.org/icon?url=" + uriString.trim() + "&size=20";
+        //low quality favicon image faviconUrl = "https://www.google.com/s2/favicons?domain_url=http%3A%2F%2F" + uriString;
+        faviconUrl = "https://icons.better-idea.org/icon?url=" + uriString.trim() + "&size=40";
     }
 
     public String getShortUrl() {
@@ -86,5 +87,13 @@ public class Bookmark {
         if (uriString.contains(".")) {
             shortUrl = uriString.substring(0,uriString.lastIndexOf("."));
         }
+    }
+
+    public boolean isTryHttp() {
+        return tryHttp;
+    }
+
+    public void setTryHttp(boolean tryHttp) {
+        this.tryHttp = tryHttp;
     }
 }

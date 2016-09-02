@@ -26,7 +26,7 @@ import nallapareddy.com.bookmarksedgepanel.tasks.UrlDetailedTask;
 import nallapareddy.com.bookmarksedgepanel.utils.PreferenceUtils;
 
 
-public class ConfigureActivity extends AppCompatActivity implements AddNewBookmarkDialog.onNewBookmarkAddedListener {
+public class ConfigureActivity extends AppCompatActivity implements AddNewBookmarkDialog.onNewBookmarkAddedListener, UrlDetailedTask.RetryDetailedTask {
 
     private List<Bookmark> bookmarks = new ArrayList<>();
     private BookmarksAdapter bookmarksAdapter;
@@ -143,8 +143,13 @@ public class ConfigureActivity extends AppCompatActivity implements AddNewBookma
     private void updateUrlInformation() {
         for (Bookmark bookmark : bookmarks) {
             if (!bookmark.isFullInfo()) {
-                new UrlDetailedTask(bookmarksAdapter, bookmark).execute(bookmark.getUri());
+                new UrlDetailedTask(bookmarksAdapter, bookmark, false, this).execute(bookmark.getUri());
             }
         }
+    }
+
+    @Override
+    public void retryDetailedTask(Bookmark bookmark) {
+        new UrlDetailedTask(bookmarksAdapter, bookmark, bookmark.isTryHttp(), this).execute(bookmark.getUri());
     }
 }

@@ -3,6 +3,7 @@ package nallapareddy.com.bookmarksedgepanel.tasks;
 
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.text.TextUtils;
 import android.util.Log;
 
 import java.io.BufferedReader;
@@ -22,10 +23,14 @@ public class UrlDetailedTask extends AsyncTask<Uri, Void, String> {
 
     private BookmarksAdapter bookmarksAdapter;
     private Bookmark bookmark;
+    private boolean tryHttp;
+    private RetryDetailedTask retryDetailedTask;
 
-    public UrlDetailedTask(BookmarksAdapter bookmarksAdapter, Bookmark bookmark) {
+    public UrlDetailedTask(BookmarksAdapter bookmarksAdapter, Bookmark bookmark, boolean tryHttp, RetryDetailedTask retryDetailedTask) {
         this.bookmarksAdapter = bookmarksAdapter;
         this.bookmark = bookmark;
+        this.tryHttp = tryHttp;
+        this.retryDetailedTask = retryDetailedTask;
     }
 
     private static final Pattern TITLE_TAG =
@@ -37,7 +42,8 @@ public class UrlDetailedTask extends AsyncTask<Uri, Void, String> {
         try {
             String stringUri = uri.toString();
             if (!stringUri.startsWith("http://") && !stringUri.startsWith("https://")) {
-                stringUri = "http://" + stringUri;
+                String prefix = tryHttp ? "http://" : "https://";
+                stringUri = prefix + stringUri;
             }
             URL url = new URL(stringUri);
             URLConnection urlConnection = url.openConnection();
@@ -80,12 +86,20 @@ public class UrlDetailedTask extends AsyncTask<Uri, Void, String> {
 
     @Override
     protected void onPostExecute(String title) {
-        if (!bookmark.isCanceled() && title != null) {
+        if (!bookmark.isCanceled() && !TextUtils.isEmpty(title) && !title.toLowerCase().contains("302 found")) {
             bookmark.setTitle(title);
             bookmark.setFullInfo(true);
         } else {
             bookmark.setFullInfo(false);
+            if (!bookmark.isTryHttp()) {
+                bookmark.setTryHttp(true);
+                retryDetailedTask.retryDetailedTask(bookmark);
+            }
         }
         bookmarksAdapter.notifyDataSetChanged();
+    }
+
+    public interface RetryDetailedTask {
+        void retryDetailedTask(Bookmark bookmark);
     }
 }

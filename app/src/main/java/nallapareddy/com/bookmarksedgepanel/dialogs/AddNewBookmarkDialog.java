@@ -52,6 +52,10 @@ public class AddNewBookmarkDialog extends DialogFragment {
             Toast.makeText(getContext(), R.string.error_url, Toast.LENGTH_SHORT).show();
             return;
         }
+
+        if (!urlText.startsWith("www.")) {
+            urlText = "www." + urlText;
+        }
         if (getActivity() instanceof onNewBookmarkAddedListener) {
             ((onNewBookmarkAddedListener) getActivity()).newBookmarkAdded(urlText);
         } else {
