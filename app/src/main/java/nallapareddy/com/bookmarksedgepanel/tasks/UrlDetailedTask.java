@@ -89,6 +89,7 @@ public class UrlDetailedTask extends AsyncTask<Uri, Void, String> {
         if (!bookmark.isCanceled() && !TextUtils.isEmpty(title) && !title.toLowerCase().contains("302 found")) {
             bookmark.setTitle(title);
             bookmark.setFullInfo(true);
+            bookmarksAdapter.notifyDataSetChanged();
         } else {
             bookmark.setFullInfo(false);
             if (!bookmark.isTryHttp()) {
@@ -96,7 +97,6 @@ public class UrlDetailedTask extends AsyncTask<Uri, Void, String> {
                 retryDetailedTask.retryDetailedTask(bookmark);
             }
         }
-        bookmarksAdapter.notifyDataSetChanged();
     }
 
     public interface RetryDetailedTask {

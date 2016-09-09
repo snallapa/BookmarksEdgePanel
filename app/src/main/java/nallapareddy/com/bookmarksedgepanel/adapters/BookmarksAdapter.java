@@ -51,7 +51,7 @@ public class BookmarksAdapter extends ArrayAdapter<Bookmark> {
         viewHolder.bookmarkTitle.setText(currentBookmark.getTitle() == null ? "" : Html.fromHtml(currentBookmark.getTitle()));
         viewHolder.checkBox.setVisibility(selectionMode ? View.VISIBLE : View.GONE);
         viewHolder.checkBox.setChecked(selected.get(position));
-        Picasso.with(getContext()).load(currentBookmark.getFaviconUrl()).into(viewHolder.bookmarkFavicon);
+        Picasso.with(getContext()).load(currentBookmark.getFaviconUrl()).error(R.drawable.ic_error_outline_black).into(viewHolder.bookmarkFavicon);
         return convertView;
     }
 

@@ -7,7 +7,6 @@ import android.content.Intent;
 import android.net.Uri;
 import android.widget.RemoteViews;
 
-import com.jakewharton.picasso.OkHttp3Downloader;
 import com.samsung.android.sdk.look.cocktailbar.SlookCocktailManager;
 import com.samsung.android.sdk.look.cocktailbar.SlookCocktailProvider;
 import com.squareup.picasso.Picasso;
@@ -18,7 +17,6 @@ import nallapareddy.com.bookmarksedgepanel.R;
 import nallapareddy.com.bookmarksedgepanel.activity.ConfigureActivity;
 import nallapareddy.com.bookmarksedgepanel.data.Bookmark;
 import nallapareddy.com.bookmarksedgepanel.utils.PreferenceUtils;
-import okhttp3.OkHttpClient;
 
 public class BrowserEdgePlusReceiver extends SlookCocktailProvider {
 
@@ -38,24 +36,26 @@ public class BrowserEdgePlusReceiver extends SlookCocktailProvider {
 
     @Override
     public void onVisibilityChanged(Context context, int cocktailId, int visibility) {
-        RemoteViews remoteViews = update(context, new int[]{cocktailId});
+        RemoteViews remoteViews = update(context, new int[] {cocktailId});
         if (visibility == SlookCocktailManager.COCKTAIL_VISIBILITY_SHOW) {
             SlookCocktailManager.getInstance(context).updateCocktail(cocktailId, remoteViews);
         }
 
     }
 
-    private RemoteViews update(Context context, int[] cocktailId) {
+    private RemoteViews update(Context context, int[] cocktailIds) {
         RemoteViews remoteViews = new RemoteViews(context.getPackageName(), R.layout.layout_edge_panel);
         List<Bookmark> bookmarks = PreferenceUtils.getBookmarks(context);
         for (int i = 0; i < imageViewId.length; i++) {
+            //reset the image view so nothing shows if favicon is not there
+            remoteViews.setImageViewResource(imageViewId[i], android.R.color.transparent);
             if (i < bookmarks.size()) {
                 Bookmark currentBookmark = bookmarks.get(i);
                 remoteViews.setTextViewText(textViewId[i], currentBookmark.getShortUrl());
-                Picasso.with(context).load(currentBookmark.getFaviconUrl()).into(remoteViews, imageViewId[i], cocktailId);
+                Picasso.with(context).load(currentBookmark.getFaviconUrl()).into(remoteViews, imageViewId[i], cocktailIds);
             } else {
                 remoteViews.setTextViewText(textViewId[i], context.getString(R.string.add_bookmark));
-                remoteViews.setImageViewResource(imageViewId[i], R.drawable.ic_add_white_24dp);
+                remoteViews.setImageViewResource(imageViewId[i], R.drawable.ic_add_white);
             }
             remoteViews.setOnClickPendingIntent(bookmarkId[i], getPendingSelfIntent(context, BOOKMARK_CLICKED + "" + i));
         }
