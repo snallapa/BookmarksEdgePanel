@@ -53,9 +53,6 @@ public class AddNewBookmarkDialog extends DialogFragment {
             return;
         }
 
-        if (!urlText.startsWith("www.")) {
-            urlText = "www." + urlText;
-        }
         if (getActivity() instanceof onNewBookmarkAddedListener) {
             ((onNewBookmarkAddedListener) getActivity()).newBookmarkAdded(urlText);
         } else {
