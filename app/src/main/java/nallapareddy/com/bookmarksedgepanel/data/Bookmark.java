@@ -83,7 +83,7 @@ public class Bookmark {
 
     public void setShortUrl(Uri uri) {
         String uriString = uri.toString();
-        uriString = uriString.replace("www.", "");
+        uriString = uriString.replace("www.", "").replace("http://", "").replace("https://","");
         if (uriString.contains(".")) {
             shortUrl = uriString.substring(0,uriString.lastIndexOf("."));
         }
