@@ -28,7 +28,7 @@ import nallapareddy.com.bookmarksedgepanel.adapters.BookmarksAdapter;
 import nallapareddy.com.bookmarksedgepanel.model.Bookmark;
 import nallapareddy.com.bookmarksedgepanel.dialogs.AddNewBookmarkDialog;
 import nallapareddy.com.bookmarksedgepanel.tasks.UrlDetailedTask;
-import nallapareddy.com.bookmarksedgepanel.utils.ModalUtils;
+import nallapareddy.com.bookmarksedgepanel.utils.ModelUtils;
 
 
 public class ConfigureActivity extends AppCompatActivity implements AddNewBookmarkDialog.onNewBookmarkAddedListener, UrlDetailedTask.onUrlDetailedTaskFinished {
@@ -49,8 +49,8 @@ public class ConfigureActivity extends AppCompatActivity implements AddNewBookma
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_configure);
         ButterKnife.bind(this);
-        ModalUtils.convertPreferences(getApplicationContext());
-        bookmarks = ModalUtils.readItems(this);
+        ModelUtils.convertPreferences(getApplicationContext());
+        bookmarks = ModelUtils.readItems(this);
         bookmarksAdapter = new BookmarksAdapter(this, bookmarks);
         bookmarksList.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE_MODAL);
         bookmarksList.setAdapter(bookmarksAdapter);
@@ -96,7 +96,7 @@ public class ConfigureActivity extends AppCompatActivity implements AddNewBookma
                         }
                         invalidateOptionsMenu();
                         actionMode.finish();
-                        ModalUtils.writeItems(getApplicationContext(), bookmarks);
+                        ModelUtils.writeItems(getApplicationContext(), bookmarks);
                 }
                 return false;
             }
@@ -144,13 +144,13 @@ public class ConfigureActivity extends AppCompatActivity implements AddNewBookma
         bookmarksAdapter.notifyDataSetChanged();
         invalidateOptionsMenu();
         updateUrlInformation();
-        ModalUtils.writeItems(getApplicationContext(), bookmarks);
+        ModelUtils.writeItems(getApplicationContext(), bookmarks);
     }
 
     @Override
     protected void onStop() {
         super.onStop();
-        ModalUtils.writeItems(getApplicationContext(), bookmarks);
+        ModelUtils.writeItems(getApplicationContext(), bookmarks);
     }
 
     @Override
@@ -189,7 +189,7 @@ public class ConfigureActivity extends AppCompatActivity implements AddNewBookma
             Bookmark currentBookmark = Parcels.unwrap(data.getParcelableExtra(EXTRA_BOOKMARK));
             bookmarks.set(position, currentBookmark);
             bookmarksAdapter.notifyDataSetChanged();
-            ModalUtils.writeItems(getApplicationContext(), bookmarks);
+            ModelUtils.writeItems(getApplicationContext(), bookmarks);
         }
     }
 }

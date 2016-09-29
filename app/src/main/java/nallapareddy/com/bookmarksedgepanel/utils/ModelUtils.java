@@ -19,14 +19,15 @@ import nallapareddy.com.bookmarksedgepanel.model.Bookmark;
 
 import static android.content.Context.MODE_PRIVATE;
 
-public class ModalUtils {
+public class ModelUtils {
 
     private static String BOOKMARKS_URI = "bookmarks_uri";
     private static String BOOKMARKS_TITLES = "bookmarks_title";
     private static String PREFERENCE_KEYS = "com.nallapareddy.bookmarks.BOOKMARKS_EDGE_PREFERENCES";
 
     private static final String NO_TITLE = "NO_TITLE";
-    private static final String DELIMITER = "^";
+    private static final String DELIMITER = "@";
+    private static final String DELIMITER_NEW = "^";
 
     private static void saveBookmarks(Context context, List<Bookmark> bookmarks) {
         SharedPreferences preferences = context.getSharedPreferences(PREFERENCE_KEYS, MODE_PRIVATE);
@@ -61,7 +62,7 @@ public class ModalUtils {
             List<String> bookmarksString = new ArrayList<>(FileUtils.readLines(bookmarksFile));
             List<Bookmark> bookmarks = new ArrayList<>();
             for (String bookmarkString : bookmarksString) {
-                String[] split = bookmarkString.split("\\" + DELIMITER);
+                String[] split = bookmarkString.split("\\" + DELIMITER_NEW);
                 Bookmark bookmark = new Bookmark(Uri.parse(split[0].trim()));
                 bookmark.setTitle(split[1]);
                 bookmark.setFullInfo(split[2].equals("true"));
