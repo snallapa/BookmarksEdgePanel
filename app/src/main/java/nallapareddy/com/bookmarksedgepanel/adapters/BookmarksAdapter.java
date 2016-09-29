@@ -45,7 +45,7 @@ public class BookmarksAdapter extends ArrayAdapter<Bookmark> {
         Bookmark currentBookmark = getItem(position);
         viewHolder.bookmarkUri.setText(currentBookmark.getUri().toString());
         viewHolder.bookmarkTitle.setVisibility(currentBookmark.isFullInfo() ? View.VISIBLE : View.GONE);
-        viewHolder.bookmarkTitle.setText(currentBookmark.getTitle() == null ? "" : Html.fromHtml(currentBookmark.getTitle()));
+        viewHolder.bookmarkTitle.setText(currentBookmark.getTitle() == null ? "" : currentBookmark.getSafeTitle());
         viewHolder.checkBox.setVisibility(selectionMode ? View.VISIBLE : View.GONE);
         viewHolder.checkBox.setChecked(selected.get(position));
         if (currentBookmark.useFavicon()) {

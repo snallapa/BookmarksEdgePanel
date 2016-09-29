@@ -15,7 +15,6 @@ import java.nio.charset.Charset;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import nallapareddy.com.bookmarksedgepanel.adapters.BookmarksAdapter;
 import nallapareddy.com.bookmarksedgepanel.model.Bookmark;
 import nallapareddy.com.bookmarksedgepanel.utils.ContentType;
 
@@ -37,7 +36,7 @@ public class UrlDetailedTask extends AsyncTask<Uri, Void, String> {
         Uri uri = uris[0];
         try {
             String stringUri = uri.toString();
-            if (!bookmark.hasProtocal()) {
+            if (!bookmark.hasProtocol()) {
                 String prefix = bookmark.isTryHttp() ? "http://" : "https://";
                 stringUri = prefix + stringUri;
             }
@@ -88,7 +87,7 @@ public class UrlDetailedTask extends AsyncTask<Uri, Void, String> {
             urlDetailedTaskFinished.finishedTask();
         } else {
             bookmark.setFullInfo(false);
-            if (!bookmark.hasProtocal() && !bookmark.isTryHttp()) {
+            if (!bookmark.hasProtocol() && !bookmark.isTryHttp()) {
                 bookmark.setTryHttp(true);
                 urlDetailedTaskFinished.retryDetailedTask(bookmark);
             }

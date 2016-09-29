@@ -1,6 +1,8 @@
 package nallapareddy.com.bookmarksedgepanel.model;
 
 import android.net.Uri;
+import android.text.Html;
+import android.text.Spanned;
 
 import org.parceler.Parcel;
 
@@ -136,8 +138,12 @@ public class Bookmark {
         return TileColors.values()[colorPosition].getColorId();
     }
 
-    public boolean hasProtocal() {
+    public boolean hasProtocol() {
         return uri.toString().startsWith("http://") || uri.toString().startsWith("https://");
+    }
+
+    public Spanned getSafeTitle() {
+        return Html.fromHtml(getTitle());
     }
 
     @Override

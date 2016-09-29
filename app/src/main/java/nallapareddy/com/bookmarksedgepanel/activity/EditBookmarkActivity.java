@@ -113,9 +113,7 @@ public class EditBookmarkActivity extends AppCompatActivity implements UrlDetail
         setupTileDisplay();
         edgeBookmarkShortUrl.setText(currentBookmark.getShortUrl());
         edgeBookmarkUrl.setText(currentBookmark.getUri().toString().trim());
-        edgeBookmarkBackgroundText.setText(currentBookmark.getTextOption());
-        edgeBookmarkBackgroundColor.setSelection(currentBookmark.getColorPosition());
-        edgeBookmarkTitle.setText(currentBookmark.getTitle());
+        edgeBookmarkTitle.setText(currentBookmark.getSafeTitle());
         edgeBookmarkDisplayOptions.setSelection(currentBookmark.useFavicon() ? 0 : 1);
         showOptions();
     }
@@ -126,7 +124,9 @@ public class EditBookmarkActivity extends AppCompatActivity implements UrlDetail
 
     private void setupTileDisplay() {
         edgeBookmarkBackgroundColor.setAdapter(new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item, TileColors.values()));
-        edgeBookmarkBackgroundText.append(currentBookmark.getShortUrl().charAt(0) + "");
+        String textOption = TextUtils.isEmpty(currentBookmark.getTextOption()) ? Character.toUpperCase(currentBookmark.getShortUrl().charAt(0)) + "" : currentBookmark.getTextOption();
+        edgeBookmarkBackgroundText.append(textOption);
+        edgeBookmarkBackgroundColor.setSelection(currentBookmark.getColorPosition());
     }
 
     private void showOptions() {
@@ -148,8 +148,7 @@ public class EditBookmarkActivity extends AppCompatActivity implements UrlDetail
             Picasso.with(this).load(currentBookmark.getFaviconUrl()).into(edgeBookmarkDisplay);
         }
     }
-
-
+    
     @OnClick(R.id.reset_bookmark)
     public void resetBookmark() {
         new UrlDetailedTask(currentBookmark, this).execute(currentBookmark.getUri());
