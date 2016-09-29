@@ -1,9 +1,8 @@
 package nallapareddy.com.bookmarksedgepanel.adapters;
 
 import android.content.Context;
-import android.net.Uri;
+import android.graphics.drawable.Drawable;
 import android.text.Html;
-import android.util.Log;
 import android.util.SparseBooleanArray;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -13,8 +12,6 @@ import android.widget.CheckBox;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.jakewharton.picasso.OkHttp3Downloader;
-import com.squareup.picasso.OkHttpDownloader;
 import com.squareup.picasso.Picasso;
 
 import java.util.List;
@@ -22,8 +19,8 @@ import java.util.List;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import nallapareddy.com.bookmarksedgepanel.R;
-import nallapareddy.com.bookmarksedgepanel.data.Bookmark;
-import okhttp3.OkHttpClient;
+import nallapareddy.com.bookmarksedgepanel.model.Bookmark;
+import nallapareddy.com.bookmarksedgepanel.utils.ViewUtils;
 
 
 public class BookmarksAdapter extends ArrayAdapter<Bookmark> {
@@ -51,7 +48,13 @@ public class BookmarksAdapter extends ArrayAdapter<Bookmark> {
         viewHolder.bookmarkTitle.setText(currentBookmark.getTitle() == null ? "" : Html.fromHtml(currentBookmark.getTitle()));
         viewHolder.checkBox.setVisibility(selectionMode ? View.VISIBLE : View.GONE);
         viewHolder.checkBox.setChecked(selected.get(position));
-        Picasso.with(getContext()).load(currentBookmark.getFaviconUrl()).error(R.drawable.ic_error_outline_black).into(viewHolder.bookmarkFavicon);
+        if (currentBookmark.useFavicon()) {
+            Picasso.with(getContext()).load(currentBookmark.getFaviconUrl()).error(R.drawable.ic_error_outline_black).into(viewHolder.bookmarkFavicon);
+        } else {
+            Drawable tileDrawable = ViewUtils.getTileDrawable(getContext(), currentBookmark.getTextOption(), currentBookmark.getColorId());
+            viewHolder.bookmarkFavicon.setImageDrawable(tileDrawable);
+        }
+
         return convertView;
     }
 

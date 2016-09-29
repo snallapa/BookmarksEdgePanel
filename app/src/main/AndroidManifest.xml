@@ -16,6 +16,8 @@
             android:launchMode="singleTask">
         </activity>
 
+        <activity android:name=".activity.EditBookmarkActivity"/>
+
         <receiver android:name="nallapareddy.com.bookmarksedgepanel.receivers.BrowserEdgePlusReceiver">
             <intent-filter>
                 <action android:name="com.samsung.android.cocktail.v2.action.COCKTAIL_UPDATE" />

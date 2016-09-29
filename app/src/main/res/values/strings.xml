@@ -3,9 +3,17 @@
     <string name="description">Save your favorite bookmarks to open easily</string>
     <string name="label">Bookmarks Edge</string>
     <string name="add_bookmark">Add</string>
+    <string name="save_bookmark">Save</string>
+    <string name="cancel_save_bookmark">Cancel</string>
     <string name="delete_bookmark">Delete</string>
     <string name="add_bookmark_title">Add bookmark</string>
     <string name="bookmark_url_hint">URL</string>
     <string name="favicon_image">favicon</string>
     <string name="error_url">Invalid URL</string>
+    <string name="bookmark_url">Bookmark Url:</string>
+    <string name="bookmark_title">Bookmark Title:</string>
+    <string name="bookmark_edge_name">Edge Name:</string>
+    <string name="bookmark_reset">Reset to Default</string>
+    <string name="bookmark_tile_overlay">Overlaid Text:</string>
+    <string name="bookmark_tile_color">Color:</string>
 </resources>

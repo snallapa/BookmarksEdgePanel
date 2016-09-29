@@ -1,29 +1,39 @@
-package nallapareddy.com.bookmarksedgepanel.data;
+package nallapareddy.com.bookmarksedgepanel.model;
 
 import android.net.Uri;
 
+import org.parceler.Parcel;
 
+@Parcel
 public class Bookmark {
-    private Uri uri;
-    private String title;
-    private boolean fullInfo;
-    private boolean canceled;
-    private String faviconUrl;
-    private String shortUrl;
-    private boolean tryHttp;
+    Uri uri;
+    String title;
+    boolean fullInfo;
+    boolean canceled;
+    String faviconUrl;
+    String shortUrl;
+    boolean tryHttp;
+    boolean useFavicon;
+    String textOption;
+    int colorPosition;
+
+    public Bookmark() {
+
+    }
 
     public Bookmark(Uri uri) {
         this.uri = uri;
         setFaviconUrl(uri);
         setShortUrl(uri);
+        title = "";
+        textOption = "";
+        useFavicon = true;
     }
 
     public Bookmark(Uri uri, String title) {
-        this.uri = uri;
+        this(uri);
         this.title = title;
         this.fullInfo = true;
-        setFaviconUrl(uri);
-        setShortUrl(uri);
     }
 
     public Uri getUri() {
@@ -32,6 +42,7 @@ public class Bookmark {
 
     public void setUri(Uri uri) {
         this.uri = uri;
+        setFaviconUrl(uri);
     }
 
     public String getTitle() {
@@ -95,5 +106,42 @@ public class Bookmark {
 
     public void setTryHttp(boolean tryHttp) {
         this.tryHttp = tryHttp;
+    }
+
+    public boolean useFavicon() {
+        return useFavicon;
+    }
+
+    public void setUseFavicon(boolean useFavicon) {
+        this.useFavicon = useFavicon;
+    }
+
+    public String getTextOption() {
+        return textOption;
+    }
+
+    public void setTextOption(String textOption) {
+        this.textOption = textOption;
+    }
+
+    public int getColorPosition() {
+        return colorPosition;
+    }
+
+    public void setColorPosition(int colorPosition) {
+        this.colorPosition = colorPosition;
+    }
+
+    public int getColorId() {
+        return TileColors.values()[colorPosition].getColorId();
+    }
+
+    public boolean hasProtocal() {
+        return uri.toString().startsWith("http://") || uri.toString().startsWith("https://");
+    }
+
+    @Override
+    public String toString() {
+        return String.format("%s^%s^%s^%s^%s^%s^%s", uri.toString().trim(), title.trim(), fullInfo, shortUrl.trim(), useFavicon, textOption, colorPosition);
     }
 }

@@ -16,21 +16,17 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import nallapareddy.com.bookmarksedgepanel.adapters.BookmarksAdapter;
-import nallapareddy.com.bookmarksedgepanel.data.Bookmark;
+import nallapareddy.com.bookmarksedgepanel.model.Bookmark;
 import nallapareddy.com.bookmarksedgepanel.utils.ContentType;
 
 public class UrlDetailedTask extends AsyncTask<Uri, Void, String> {
 
-    private BookmarksAdapter bookmarksAdapter;
     private Bookmark bookmark;
-    private boolean tryHttp;
-    private RetryDetailedTask retryDetailedTask;
+    private onUrlDetailedTaskFinished urlDetailedTaskFinished;
 
-    public UrlDetailedTask(BookmarksAdapter bookmarksAdapter, Bookmark bookmark, boolean tryHttp, RetryDetailedTask retryDetailedTask) {
-        this.bookmarksAdapter = bookmarksAdapter;
+    public UrlDetailedTask(Bookmark bookmark, onUrlDetailedTaskFinished urlDetailedTaskFinished) {
         this.bookmark = bookmark;
-        this.tryHttp = tryHttp;
-        this.retryDetailedTask = retryDetailedTask;
+        this.urlDetailedTaskFinished = urlDetailedTaskFinished;
     }
 
     private static final Pattern TITLE_TAG =
@@ -41,8 +37,8 @@ public class UrlDetailedTask extends AsyncTask<Uri, Void, String> {
         Uri uri = uris[0];
         try {
             String stringUri = uri.toString();
-            if (!stringUri.startsWith("http://") && !stringUri.startsWith("https://")) {
-                String prefix = tryHttp ? "http://" : "https://";
+            if (!bookmark.hasProtocal()) {
+                String prefix = bookmark.isTryHttp() ? "http://" : "https://";
                 stringUri = prefix + stringUri;
             }
             URL url = new URL(stringUri);
@@ -89,17 +85,19 @@ public class UrlDetailedTask extends AsyncTask<Uri, Void, String> {
         if (!bookmark.isCanceled() && !TextUtils.isEmpty(title) && !title.toLowerCase().contains("302 found")) {
             bookmark.setTitle(title);
             bookmark.setFullInfo(true);
-            bookmarksAdapter.notifyDataSetChanged();
+            urlDetailedTaskFinished.finishedTask();
         } else {
             bookmark.setFullInfo(false);
-            if (!bookmark.isTryHttp()) {
+            if (!bookmark.hasProtocal() && !bookmark.isTryHttp()) {
                 bookmark.setTryHttp(true);
-                retryDetailedTask.retryDetailedTask(bookmark);
+                urlDetailedTaskFinished.retryDetailedTask(bookmark);
             }
         }
     }
 
-    public interface RetryDetailedTask {
+    public interface onUrlDetailedTaskFinished {
         void retryDetailedTask(Bookmark bookmark);
+
+        void finishedTask();
     }
 }

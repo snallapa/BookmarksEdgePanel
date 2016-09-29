@@ -1,5 +1,6 @@
 package nallapareddy.com.bookmarksedgepanel.activity;
 
+import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -8,10 +9,14 @@ import android.view.ActionMode;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.AbsListView;
+import android.widget.AdapterView;
 import android.widget.ListView;
 
 import com.samsung.android.sdk.look.Slook;
+
+import org.parceler.Parcels;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,13 +25,18 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import nallapareddy.com.bookmarksedgepanel.R;
 import nallapareddy.com.bookmarksedgepanel.adapters.BookmarksAdapter;
-import nallapareddy.com.bookmarksedgepanel.data.Bookmark;
+import nallapareddy.com.bookmarksedgepanel.model.Bookmark;
 import nallapareddy.com.bookmarksedgepanel.dialogs.AddNewBookmarkDialog;
 import nallapareddy.com.bookmarksedgepanel.tasks.UrlDetailedTask;
-import nallapareddy.com.bookmarksedgepanel.utils.PreferenceUtils;
+import nallapareddy.com.bookmarksedgepanel.utils.ModalUtils;
 
 
-public class ConfigureActivity extends AppCompatActivity implements AddNewBookmarkDialog.onNewBookmarkAddedListener, UrlDetailedTask.RetryDetailedTask {
+public class ConfigureActivity extends AppCompatActivity implements AddNewBookmarkDialog.onNewBookmarkAddedListener, UrlDetailedTask.onUrlDetailedTaskFinished {
+
+    private final int REQUEST_CODE = 1729;
+
+    static final String EXTRA_BOOKMARK = "extra_bookmark";
+    static final String EXTRA_POSITION = "extra_position";
 
     private List<Bookmark> bookmarks = new ArrayList<>();
     private BookmarksAdapter bookmarksAdapter;
@@ -39,10 +49,21 @@ public class ConfigureActivity extends AppCompatActivity implements AddNewBookma
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_configure);
         ButterKnife.bind(this);
-        bookmarks = PreferenceUtils.getBookmarks(this);
+        ModalUtils.convertPreferences(getApplicationContext());
+        bookmarks = ModalUtils.readItems(this);
         bookmarksAdapter = new BookmarksAdapter(this, bookmarks);
         bookmarksList.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE_MODAL);
         bookmarksList.setAdapter(bookmarksAdapter);
+
+        bookmarksList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
+                Intent intent = new Intent(ConfigureActivity.this, EditBookmarkActivity.class);
+                intent.putExtra(EXTRA_BOOKMARK, Parcels.wrap(bookmarks.get(position)));
+                intent.putExtra(EXTRA_POSITION, position);
+                startActivityForResult(intent, REQUEST_CODE);
+            }
+        });
 
         bookmarksList.setMultiChoiceModeListener(new AbsListView.MultiChoiceModeListener() {
             @Override
@@ -75,7 +96,7 @@ public class ConfigureActivity extends AppCompatActivity implements AddNewBookma
                         }
                         invalidateOptionsMenu();
                         actionMode.finish();
-                        PreferenceUtils.saveBookmarks(getApplicationContext(), bookmarks);
+                        ModalUtils.writeItems(getApplicationContext(), bookmarks);
                 }
                 return false;
             }
@@ -123,13 +144,13 @@ public class ConfigureActivity extends AppCompatActivity implements AddNewBookma
         bookmarksAdapter.notifyDataSetChanged();
         invalidateOptionsMenu();
         updateUrlInformation();
-        PreferenceUtils.saveBookmarks(this, bookmarks);
+        ModalUtils.writeItems(getApplicationContext(), bookmarks);
     }
 
     @Override
     protected void onStop() {
         super.onStop();
-        PreferenceUtils.saveBookmarks(this, bookmarks);
+        ModalUtils.writeItems(getApplicationContext(), bookmarks);
     }
 
     @Override
@@ -143,13 +164,32 @@ public class ConfigureActivity extends AppCompatActivity implements AddNewBookma
     private void updateUrlInformation() {
         for (Bookmark bookmark : bookmarks) {
             if (!bookmark.isFullInfo()) {
-                new UrlDetailedTask(bookmarksAdapter, bookmark, false, this).execute(bookmark.getUri());
+                new UrlDetailedTask(bookmark, this).execute(bookmark.getUri());
             }
         }
     }
 
     @Override
     public void retryDetailedTask(Bookmark bookmark) {
-        new UrlDetailedTask(bookmarksAdapter, bookmark, bookmark.isTryHttp(), this).execute(bookmark.getUri());
+        new UrlDetailedTask(bookmark, this).execute(bookmark.getUri());
+    }
+
+    @Override
+    public void finishedTask() {
+        bookmarksAdapter.notifyDataSetChanged();
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode != REQUEST_CODE) {
+            return;
+        }
+        if (resultCode == RESULT_OK) {
+            int position = data.getIntExtra(EXTRA_POSITION, -1);
+            Bookmark currentBookmark = Parcels.unwrap(data.getParcelableExtra(EXTRA_BOOKMARK));
+            bookmarks.set(position, currentBookmark);
+            bookmarksAdapter.notifyDataSetChanged();
+            ModalUtils.writeItems(getApplicationContext(), bookmarks);
+        }
     }
 }
