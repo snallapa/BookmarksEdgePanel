@@ -148,7 +148,7 @@ public class EditBookmarkActivity extends AppCompatActivity implements UrlDetail
             Picasso.with(this).load(currentBookmark.getFaviconUrl()).into(edgeBookmarkDisplay);
         }
     }
-    
+
     @OnClick(R.id.reset_bookmark)
     public void resetBookmark() {
         new UrlDetailedTask(currentBookmark, this).execute(currentBookmark.getUri());
