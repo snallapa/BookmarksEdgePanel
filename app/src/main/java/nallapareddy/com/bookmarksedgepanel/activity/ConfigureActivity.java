@@ -27,6 +27,8 @@ import nallapareddy.com.bookmarksedgepanel.R;
 import nallapareddy.com.bookmarksedgepanel.adapters.BookmarksAdapter;
 import nallapareddy.com.bookmarksedgepanel.model.Bookmark;
 import nallapareddy.com.bookmarksedgepanel.dialogs.AddNewBookmarkDialog;
+import nallapareddy.com.bookmarksedgepanel.model.BookmarkModel;
+import nallapareddy.com.bookmarksedgepanel.model.IBookmarkModel;
 import nallapareddy.com.bookmarksedgepanel.tasks.UrlDetailedTask;
 import nallapareddy.com.bookmarksedgepanel.utils.ModelUtils;
 
@@ -38,7 +40,7 @@ public class ConfigureActivity extends AppCompatActivity implements AddNewBookma
     static final String EXTRA_BOOKMARK = "extra_bookmark";
     static final String EXTRA_POSITION = "extra_position";
 
-    private List<Bookmark> bookmarks = new ArrayList<>();
+    private IBookmarkModel<Bookmark> model;
     private BookmarksAdapter bookmarksAdapter;
 
     @BindView(R.id.bookmarks_listview)
@@ -49,9 +51,8 @@ public class ConfigureActivity extends AppCompatActivity implements AddNewBookma
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_configure);
         ButterKnife.bind(this);
-        ModelUtils.convertPreferences(getApplicationContext());
-        bookmarks = ModelUtils.readItems(this);
-        bookmarksAdapter = new BookmarksAdapter(this, bookmarks);
+        model = new BookmarkModel(getApplicationContext());
+        bookmarksAdapter = new BookmarksAdapter(this, model.getBookmarks());
         bookmarksList.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE_MODAL);
         bookmarksList.setAdapter(bookmarksAdapter);
 
@@ -59,7 +60,7 @@ public class ConfigureActivity extends AppCompatActivity implements AddNewBookma
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
                 Intent intent = new Intent(ConfigureActivity.this, EditBookmarkActivity.class);
-                intent.putExtra(EXTRA_BOOKMARK, Parcels.wrap(bookmarks.get(position)));
+                intent.putExtra(EXTRA_BOOKMARK, Parcels.wrap(model.getBookmark(position)));
                 intent.putExtra(EXTRA_POSITION, position);
                 startActivityForResult(intent, REQUEST_CODE);
             }
@@ -88,15 +89,15 @@ public class ConfigureActivity extends AppCompatActivity implements AddNewBookma
                 switch (menuItem.getItemId()) {
                     case R.id.action_delete_bookmark:
                         SparseBooleanArray selection = bookmarksAdapter.getSelection();
-                        for (int i = bookmarks.size()-1; i >= 0;i--) {
+                        for (int i = model.size()-1; i >= 0;i--) {
                             if (selection.get(i)) {
-                                bookmarks.get(i).setCanceled(true);
-                                bookmarks.remove(i);
+                                model.getBookmark(i).setCanceled(true);
+                                model.removeBookmark(i);
                             }
                         }
                         invalidateOptionsMenu();
                         actionMode.finish();
-                        ModelUtils.writeItems(getApplicationContext(), bookmarks);
+                        model.save();
                 }
                 return false;
             }
@@ -139,30 +140,30 @@ public class ConfigureActivity extends AppCompatActivity implements AddNewBookma
     public void newBookmarkAdded(String uri) {
         Uri newBookmark = Uri.parse(uri);
         if (newBookmark != null) {
-            bookmarks.add(new Bookmark(newBookmark));
+            model.addBookmark(new Bookmark(newBookmark));
         }
         bookmarksAdapter.notifyDataSetChanged();
         invalidateOptionsMenu();
         updateUrlInformation();
-        ModelUtils.writeItems(getApplicationContext(), bookmarks);
+        model.save();
     }
 
     @Override
     protected void onStop() {
         super.onStop();
-        ModelUtils.writeItems(getApplicationContext(), bookmarks);
+        model.save();
     }
 
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
-        if (bookmarks.size() > 5) {
+        if (model.size() > 5) {
             menu.findItem(R.id.action_add_bookmark).setEnabled(false);
         }
         return true;
     }
 
     private void updateUrlInformation() {
-        for (Bookmark bookmark : bookmarks) {
+        for (Bookmark bookmark : model.getBookmarks()) {
             if (!bookmark.isFullInfo()) {
                 new UrlDetailedTask(bookmark, this).execute(bookmark.getUri());
             }
@@ -187,9 +188,9 @@ public class ConfigureActivity extends AppCompatActivity implements AddNewBookma
         if (resultCode == RESULT_OK) {
             int position = data.getIntExtra(EXTRA_POSITION, -1);
             Bookmark currentBookmark = Parcels.unwrap(data.getParcelableExtra(EXTRA_BOOKMARK));
-            bookmarks.set(position, currentBookmark);
+            model.updateBookmark(position, currentBookmark);
             bookmarksAdapter.notifyDataSetChanged();
-            ModelUtils.writeItems(getApplicationContext(), bookmarks);
+            model.save();
         }
     }
 }

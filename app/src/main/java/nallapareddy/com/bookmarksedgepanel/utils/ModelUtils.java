@@ -46,7 +46,7 @@ public class ModelUtils {
 
     public static void writeItems(Context context, List<Bookmark> bookmarks) {
         File filesDir = context.getFilesDir();
-        File bookmarksFile = new File(filesDir, "bookmarks.txt");
+        File bookmarksFile = new File(filesDir, "bookmarks-new.txt");
         try {
             FileUtils.writeLines(bookmarksFile, bookmarks);
         } catch (IOException exception) {
@@ -55,7 +55,7 @@ public class ModelUtils {
         }
     }
 
-    public static List<Bookmark> readItems(Context context) {
+    public static List<Bookmark> readOldItems(Context context) {
         File filesDir = context.getFilesDir();
         File bookmarksFile = new File(filesDir, "bookmarks.txt");
         try {
@@ -74,7 +74,35 @@ public class ModelUtils {
             }
             return bookmarks;
         } catch (IOException exception) {
-            Log.e("PREFERENCES", "Could not write to file");
+            return null;
+        }
+    }
+
+    public static List<Bookmark> readItems(Context context) {
+        File filesDir = context.getFilesDir();
+        File bookmarksFile = new File(filesDir, "bookmarks-new.txt");
+        try {
+            List<String> bookmarksString = new ArrayList<>(FileUtils.readLines(bookmarksFile));
+            List<Bookmark> bookmarks = new ArrayList<>();
+            for (int i = 0; i < bookmarksString.size(); i++) {
+                Bookmark bookmark = new Bookmark(Uri.parse(bookmarksString.get(i).trim()));
+                i++;
+                bookmark.setTitle(bookmarksString.get(i));
+                i++;
+                bookmark.setFullInfo(bookmarksString.get(i).equals("true"));
+                i++;
+                bookmark.setShortUrl(bookmarksString.get(i));
+                i++;
+                bookmark.setUseFavicon(bookmarksString.get(i).equals("true"));
+                i++;
+                bookmark.setTextOption(bookmarksString.get(i));
+                i++;
+                bookmark.setColorPosition(Integer.parseInt(bookmarksString.get(i)));
+                bookmarks.add(bookmark);
+            }
+            return bookmarks;
+        } catch (IOException exception) {
+            Log.e("PREFERENCES", "Could not read from file file");
             return getBookmarks(context);
         }
     }
@@ -136,6 +164,19 @@ public class ModelUtils {
         List<Bookmark> bookmarks = getBookmarks(context);
         if (bookmarks != null && !bookmarks.isEmpty()) {
             writeItems(context, bookmarks);
+        } else {
+            try {
+                bookmarks = readOldItems(context);
+                if (bookmarks != null) {
+                    writeItems(context, bookmarks);
+                }
+            } catch (Exception e) {
+                //we are good because there are no obsolete items
+            } finally {
+                File filesDir = context.getFilesDir();
+                File oldBookmarkFile = new File(filesDir, "bookmarks.txt");
+                FileUtils.deleteQuietly(oldBookmarkFile);
+            }
         }
         clear(context);
     }

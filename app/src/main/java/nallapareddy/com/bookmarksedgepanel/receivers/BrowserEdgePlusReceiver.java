@@ -4,21 +4,32 @@ package nallapareddy.com.bookmarksedgepanel.receivers;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
+import android.location.Location;
 import android.net.Uri;
+import android.util.Log;
 import android.widget.RemoteViews;
 
+import com.jakewharton.picasso.OkHttp3Downloader;
 import com.samsung.android.sdk.look.cocktailbar.SlookCocktailManager;
 import com.samsung.android.sdk.look.cocktailbar.SlookCocktailProvider;
+import com.squareup.picasso.MemoryPolicy;
+import com.squareup.picasso.NetworkPolicy;
 import com.squareup.picasso.Picasso;
+import com.squareup.picasso.Target;
 
+import java.io.IOException;
 import java.util.List;
 
 import nallapareddy.com.bookmarksedgepanel.R;
 import nallapareddy.com.bookmarksedgepanel.activity.ConfigureActivity;
 import nallapareddy.com.bookmarksedgepanel.model.Bookmark;
+import nallapareddy.com.bookmarksedgepanel.model.BookmarkModel;
+import nallapareddy.com.bookmarksedgepanel.model.IBookmarkModel;
 import nallapareddy.com.bookmarksedgepanel.utils.ModelUtils;
 import nallapareddy.com.bookmarksedgepanel.utils.ViewUtils;
+import okhttp3.OkHttpClient;
 
 public class BrowserEdgePlusReceiver extends SlookCocktailProvider {
 
@@ -27,10 +38,11 @@ public class BrowserEdgePlusReceiver extends SlookCocktailProvider {
     private int[] imageViewId = {R.id.edge_row_favicon_1, R.id.edge_row_favicon_2, R.id.edge_row_favicon_3, R.id.edge_row_favicon_4, R.id.edge_row_favicon_5, R.id.edge_row_favicon_6};
     private int[] textViewId = {R.id.edge_row_uri_1, R.id.edge_row_uri_2, R.id.edge_row_uri_3, R.id.edge_row_uri_4, R.id.edge_row_uri_5, R.id.edge_row_uri_6};
     private int[] bookmarkId = {R.id.bookmark_1, R.id.bookmark_2, R.id.bookmark_3, R.id.bookmark_4, R.id.bookmark_5, R.id.bookmark_6};
+    private RemoteViews remoteViews;
 
     @Override
     public void onUpdate(Context context, SlookCocktailManager cocktailManager, int[] cocktailIds) {
-        RemoteViews remoteViews = update(context, cocktailIds);
+        update(context, cocktailIds);
         for (int i = 0; i < cocktailIds.length; i++) {
             cocktailManager.updateCocktail(cocktailIds[i], remoteViews);
         }
@@ -38,21 +50,24 @@ public class BrowserEdgePlusReceiver extends SlookCocktailProvider {
 
     @Override
     public void onVisibilityChanged(Context context, int cocktailId, int visibility) {
-        RemoteViews remoteViews = update(context, new int[] {cocktailId});
+        update(context, new int[]{cocktailId});
         if (visibility == SlookCocktailManager.COCKTAIL_VISIBILITY_SHOW) {
             SlookCocktailManager.getInstance(context).updateCocktail(cocktailId, remoteViews);
         }
 
     }
 
-    private RemoteViews update(Context context, int[] cocktailIds) {
-        RemoteViews remoteViews = new RemoteViews(context.getPackageName(), R.layout.layout_edge_panel);
-        List<Bookmark> bookmarks = ModelUtils.readItems(context);
+    private void update(Context context, int[] cocktailIds) {
+        remoteViews = new RemoteViews(context.getPackageName(), R.layout.layout_edge_panel);
+        IBookmarkModel<Bookmark> model = new BookmarkModel(context.getApplicationContext());
+        for (Bookmark bookmark : model.getBookmarks()) {
+            Picasso.with(context).load(bookmark.getFaviconUrl()).fetch();
+        }
         for (int i = 0; i < imageViewId.length; i++) {
             //reset the image view so nothing shows if favicon is not there
             remoteViews.setImageViewResource(imageViewId[i], android.R.color.transparent);
-            if (i < bookmarks.size()) {
-                Bookmark currentBookmark = bookmarks.get(i);
+            if (i < model.size()) {
+                Bookmark currentBookmark = model.getBookmark(i);
                 remoteViews.setTextViewText(textViewId[i], currentBookmark.getShortUrl());
                 if (currentBookmark.useFavicon()) {
                     Picasso.with(context).load(currentBookmark.getFaviconUrl()).into(remoteViews, imageViewId[i], cocktailIds);
@@ -67,7 +82,6 @@ public class BrowserEdgePlusReceiver extends SlookCocktailProvider {
             }
             remoteViews.setOnClickPendingIntent(bookmarkId[i], getPendingSelfIntent(context, BOOKMARK_CLICKED + "" + i));
         }
-        return remoteViews;
     }
 
     private PendingIntent getPendingSelfIntent(Context context, String action) {
@@ -81,10 +95,10 @@ public class BrowserEdgePlusReceiver extends SlookCocktailProvider {
         super.onReceive(context, intent);
         String action = intent.getAction();
         if (action.startsWith(BOOKMARK_CLICKED)) {
-            List<Bookmark> bookmarks = ModelUtils.readItems(context);
+            IBookmarkModel<Bookmark> model = new BookmarkModel(context);
             int index = Integer.parseInt(action.replace(BOOKMARK_CLICKED, ""));
-            if (index < bookmarks.size()) {
-                Uri currentUri = bookmarks.get(index).getUri();
+            if (index < model.size()) {
+                Uri currentUri = model.getBookmark(index).getUri();
                 if (!currentUri.toString().startsWith("http://") && !currentUri.toString().startsWith("https://")) {
                     currentUri = Uri.parse("http://" + currentUri.toString());
                 }
