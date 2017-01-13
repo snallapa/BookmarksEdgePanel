@@ -1,5 +1,6 @@
 apply plugin: 'com.android.application'
 apply plugin: 'com.neenbedankt.android-apt'
+apply plugin: 'io.fabric'
 android {
     compileSdkVersion 23
     buildToolsVersion "21.1.2"
@@ -8,7 +9,7 @@ android {
         minSdkVersion 23
         targetSdkVersion 23
         versionCode 3
-        versionName "2.0"
+        versionName "2.1"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
@@ -22,6 +23,9 @@ android {
 repositories{
     maven {
         url 'http://dl.bintray.com/amulyakhare/maven'
+    }
+    maven {
+        url 'https://maven.fabric.io/public'
     }
 }
 
@@ -40,4 +44,7 @@ dependencies {
     apt 'com.jakewharton:butterknife-compiler:8.4.0'
     compile 'com.jakewharton.picasso:picasso2-okhttp3-downloader:1.0.2'
     testCompile 'junit:junit:4.12'
+    compile('com.crashlytics.sdk.android:crashlytics:2.6.5@aar') {
+        transitive = true;
+    }
 }
