@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "943902590613",
+    "firebase_url": "https://bookmarksedgepanel-77ec8.firebaseio.com",
+    "project_id": "bookmarksedgepanel-77ec8",
+    "storage_bucket": "bookmarksedgepanel-77ec8.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:943902590613:android:86ebc587c6513e80",
+        "android_client_info": {
+          "package_name": "nallapareddy.com.browseredgepanel"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "943902590613-icv44ja1lsomimdj94f7rsivd9cvd66i.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "nallapareddy.com.browseredgepanel",
+            "certificate_hash": "D8C3A0A0791618ED22A259052C1B315AE6DDAE42"
+          }
+        },
+        {
+          "client_id": "943902590613-1j3g7bfm1jvcfg7mh2bg3fadcu77471t.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBxz-lOzXhSLAI_30dvA_NYo2Wd_NfZ6kA"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "943902590613-1j3g7bfm1jvcfg7mh2bg3fadcu77471t.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -81,8 +81,10 @@ public class UrlDetailedTask extends AsyncTask<Uri, Void, String> {
 
     @Override
     protected void onPostExecute(String title) {
-        if (!bookmark.isCanceled() && !TextUtils.isEmpty(title) && !title.toLowerCase().contains("302 found")) {
-            bookmark.setTitle(title);
+        if (!bookmark.isCanceled()
+                && !TextUtils.isEmpty(title)
+                && !title.toLowerCase().contains("302 found")) {
+            bookmark.setTitle(title.replace("\n", ""));
             bookmark.setFullInfo(true);
             urlDetailedTaskFinished.finishedTask();
         } else {

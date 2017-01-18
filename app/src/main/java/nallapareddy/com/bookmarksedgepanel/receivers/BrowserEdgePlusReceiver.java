@@ -70,7 +70,9 @@ public class BrowserEdgePlusReceiver extends SlookCocktailProvider {
                 Bookmark currentBookmark = model.getBookmark(i);
                 remoteViews.setTextViewText(textViewId[i], currentBookmark.getShortUrl());
                 if (currentBookmark.useFavicon()) {
-                    Picasso.with(context).load(currentBookmark.getFaviconUrl()).into(remoteViews, imageViewId[i], cocktailIds);
+                    Picasso.with(context).load(currentBookmark.getFaviconUrl())
+                            .networkPolicy(NetworkPolicy.OFFLINE)
+                            .into(remoteViews, imageViewId[i], cocktailIds);
                 } else {
                     Drawable tileDrawable = ViewUtils.getTileDrawableEdge(context, currentBookmark.getTextOption(), currentBookmark.getColorId());
                     remoteViews.setImageViewBitmap(imageViewId[i], ViewUtils.drawableToBitmap(tileDrawable));

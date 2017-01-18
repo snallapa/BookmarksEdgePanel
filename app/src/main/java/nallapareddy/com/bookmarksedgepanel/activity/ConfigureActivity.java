@@ -15,6 +15,10 @@ import android.widget.AdapterView;
 import android.widget.ListView;
 
 import com.crashlytics.android.Crashlytics;
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdSize;
+import com.google.android.gms.ads.AdView;
+import com.google.android.gms.ads.MobileAds;
 import com.samsung.android.sdk.look.Slook;
 
 import org.parceler.Parcels;
@@ -39,6 +43,8 @@ public class ConfigureActivity extends AppCompatActivity implements AddNewBookma
 
     private final int REQUEST_CODE = 1729;
 
+    private final String AD_CODE = "ca-app-pub-3135803015555141~4955511510";
+
     static final String EXTRA_BOOKMARK = "extra_bookmark";
     static final String EXTRA_POSITION = "extra_position";
 
@@ -53,6 +59,7 @@ public class ConfigureActivity extends AppCompatActivity implements AddNewBookma
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_configure);
         ButterKnife.bind(this);
+        initializeAds();
         model = new BookmarkModel(getApplicationContext());
         bookmarksAdapter = new BookmarksAdapter(this, model.getBookmarks());
         bookmarksList.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE_MODAL);
@@ -91,7 +98,7 @@ public class ConfigureActivity extends AppCompatActivity implements AddNewBookma
                 switch (menuItem.getItemId()) {
                     case R.id.action_delete_bookmark:
                         SparseBooleanArray selection = bookmarksAdapter.getSelection();
-                        for (int i = model.size()-1; i >= 0;i--) {
+                        for (int i = model.size() - 1; i >= 0; i--) {
                             if (selection.get(i)) {
                                 model.getBookmark(i).setCanceled(true);
                                 model.removeBookmark(i);
@@ -194,5 +201,12 @@ public class ConfigureActivity extends AppCompatActivity implements AddNewBookma
             bookmarksAdapter.notifyDataSetChanged();
             model.save();
         }
+    }
+
+    private void initializeAds() {
+        MobileAds.initialize(getApplicationContext(), AD_CODE);
+        AdView adView = ButterKnife.findById(this, R.id.adView);
+        AdRequest adRequest = new AdRequest.Builder().build();
+        adView.loadAd(adRequest);
     }
 }

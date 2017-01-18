@@ -95,11 +95,11 @@ public class EditBookmarkActivity extends AppCompatActivity implements UrlDetail
             return;
         }
         currentBookmark.setUri(Uri.parse(urlText));
-        currentBookmark.setShortUrl(edgeBookmarkShortUrl.getText().toString());
+        currentBookmark.setShortUrl(edgeBookmarkShortUrl.getText().toString().replace("\n", ""));
         currentBookmark.setColorPosition(edgeBookmarkBackgroundColor.getSelectedItemPosition());
-        currentBookmark.setTextOption(edgeBookmarkBackgroundText.getText().toString());
+        currentBookmark.setTextOption(edgeBookmarkBackgroundText.getText().toString().replace("\n", ""));
         String title = edgeBookmarkTitle.getText().toString();
-        currentBookmark.setTitle(title);
+        currentBookmark.setTitle(title.replace("\n", ""));
         currentBookmark.setFullInfo(!TextUtils.isEmpty(title));
         Intent data = new Intent();
         data.putExtra(ConfigureActivity.EXTRA_BOOKMARK, Parcels.wrap(currentBookmark));
