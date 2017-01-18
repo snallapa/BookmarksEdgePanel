@@ -148,6 +148,14 @@ public class Bookmark {
 
     @Override
     public String toString() {
-        return String.format("%s\n%s\n%s\n%s\n%s\n%s\n%s", uri.toString().trim(), title.trim(), fullInfo, shortUrl.trim(), useFavicon, textOption, colorPosition);
+        title = title == null ? "" : title;
+        return String.format("%s\n%s\n%s\n%s\n%s\n%s\n%s",
+                uri.toString().trim(),
+                title.trim(),
+                fullInfo,
+                shortUrl.trim(),
+                useFavicon,
+                textOption, 
+                colorPosition);
     }
 }
