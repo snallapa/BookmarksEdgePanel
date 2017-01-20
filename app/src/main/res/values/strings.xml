@@ -16,5 +16,6 @@
     <string name="bookmark_reset">Reset to Default</string>
     <string name="bookmark_tile_overlay">Overlaid Text:</string>
     <string name="bookmark_tile_color">Color:</string>
-    <string name="banner_ad_unit_id">ca-app-pub-3135803015555141/3339177512</string>
+    <string name="banner_ad_unit_id_main">ca-app-pub-3135803015555141/3339177512</string>
+    <string name="banner_ad_unit_id_edit">ca-app-pub-3135803015555141/7457992712</string>
 </resources>

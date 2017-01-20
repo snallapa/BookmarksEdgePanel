@@ -15,6 +15,9 @@ import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.Toast;
 
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdView;
+import com.google.android.gms.ads.MobileAds;
 import com.squareup.picasso.Picasso;
 
 import org.parceler.Parcels;
@@ -32,6 +35,8 @@ import nallapareddy.com.bookmarksedgepanel.utils.ViewUtils;
 
 
 public class EditBookmarkActivity extends AppCompatActivity implements UrlDetailedTask.onUrlDetailedTaskFinished {
+
+    private final String AD_CODE = "ca-app-pub-3135803015555141~4955511510";
 
     @BindView(R.id.edge_bookmark_display)
     ImageView edgeBookmarkDisplay;
@@ -58,6 +63,7 @@ public class EditBookmarkActivity extends AppCompatActivity implements UrlDetail
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_edit_bookmark);
         ButterKnife.bind(this);
+        initializeAds();
         currentBookmark = Parcels.unwrap(getIntent().getParcelableExtra(ConfigureActivity.EXTRA_BOOKMARK));
         currentPosition = getIntent().getIntExtra(ConfigureActivity.EXTRA_POSITION, -1);
         if (currentPosition == -1) {
@@ -124,9 +130,21 @@ public class EditBookmarkActivity extends AppCompatActivity implements UrlDetail
 
     private void setupTileDisplay() {
         edgeBookmarkBackgroundColor.setAdapter(new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item, TileColors.values()));
-        String textOption = TextUtils.isEmpty(currentBookmark.getTextOption()) ? Character.toUpperCase(currentBookmark.getShortUrl().charAt(0)) + "" : currentBookmark.getTextOption();
+        String textOption = getTileText();
         edgeBookmarkBackgroundText.append(textOption);
         edgeBookmarkBackgroundColor.setSelection(currentBookmark.getColorPosition());
+    }
+
+    private String getTileText() {
+        if (TextUtils.isEmpty(currentBookmark.getTextOption())) {
+            if (TextUtils.isEmpty(currentBookmark.getShortUrl())) {
+                return  "";
+            } else {
+                return Character.toUpperCase(currentBookmark.getShortUrl().charAt(0)) + "";
+            }
+        } else {
+            return currentBookmark.getTextOption();
+        }
     }
 
     private void showOptions() {
@@ -194,6 +212,13 @@ public class EditBookmarkActivity extends AppCompatActivity implements UrlDetail
         public String toString() {
             return text;
         }
+    }
+
+    private void initializeAds() {
+        MobileAds.initialize(getApplicationContext(), AD_CODE);
+        AdView adView = ButterKnife.findById(this, R.id.adView);
+        AdRequest adRequest = new AdRequest.Builder().build();
+        adView.loadAd(adRequest);
     }
 }
 
