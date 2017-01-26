@@ -149,8 +149,8 @@ public class Bookmark {
     @Override
     public String toString() {
         title = title == null ? "" : title.replace("\n", "");
-        shortUrl = shortUrl.replace("\n", "");
-        textOption = textOption.replace("\n", "");
+        shortUrl = shortUrl == null ? "" : shortUrl.replace("\n", "");
+        textOption = textOption == null ? "" : textOption.replace("\n", "");
         return String.format("%s\n%s\n%s\n%s\n%s\n%s\n%s",
                 uri.toString().trim(),
                 title.trim(),
