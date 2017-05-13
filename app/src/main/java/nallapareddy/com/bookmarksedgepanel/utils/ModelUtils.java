@@ -97,12 +97,17 @@ public class ModelUtils {
                 i++;
                 bookmark.setTextOption(bookmarksString.get(i));
                 i++;
-                bookmark.setColorPosition(Integer.parseInt(bookmarksString.get(i)));
+                try {
+                    bookmark.setColorPosition(Integer.parseInt(bookmarksString.get(i)));
+                } catch (NumberFormatException e) {
+                    bookmark.setColorPosition(0);
+                    Log.e("PREFERENCES", "readItems: " + bookmarksString.get(i), e);
+                }
                 bookmarks.add(bookmark);
             }
             return bookmarks;
         } catch (IOException exception) {
-            Log.e("PREFERENCES", "Could not read from file file");
+            Log.e("PREFERENCES", "Could not read from file");
             return getBookmarks(context);
         }
     }

@@ -20,6 +20,7 @@ import com.squareup.picasso.Picasso;
 import com.squareup.picasso.Target;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 import nallapareddy.com.bookmarksedgepanel.R;
@@ -39,6 +40,9 @@ public class BrowserEdgePlusReceiver extends SlookCocktailProvider {
     private int[] textViewId = {R.id.edge_row_uri_1, R.id.edge_row_uri_2, R.id.edge_row_uri_3, R.id.edge_row_uri_4, R.id.edge_row_uri_5, R.id.edge_row_uri_6};
     private int[] bookmarkId = {R.id.bookmark_1, R.id.bookmark_2, R.id.bookmark_3, R.id.bookmark_4, R.id.bookmark_5, R.id.bookmark_6};
     private RemoteViews remoteViews;
+    private int networkCalls;
+    private int completedCalls;
+    private List<Target> targets = new ArrayList<>();
 
     @Override
     public void onUpdate(Context context, SlookCocktailManager cocktailManager, int[] cocktailIds) {
@@ -52,17 +56,16 @@ public class BrowserEdgePlusReceiver extends SlookCocktailProvider {
     public void onVisibilityChanged(Context context, int cocktailId, int visibility) {
         update(context, new int[]{cocktailId});
         if (visibility == SlookCocktailManager.COCKTAIL_VISIBILITY_SHOW) {
-            SlookCocktailManager.getInstance(context).updateCocktail(cocktailId, remoteViews);
+            if (networkCalls == completedCalls) {
+                SlookCocktailManager.getInstance(context).updateCocktail(cocktailId, remoteViews);
+            }
         }
 
     }
 
-    private void update(Context context, int[] cocktailIds) {
+    private void update(final Context context, int[] cocktailIds) {
         remoteViews = new RemoteViews(context.getPackageName(), R.layout.layout_edge_panel);
         IBookmarkModel<Bookmark> model = new BookmarkModel(context.getApplicationContext());
-        for (Bookmark bookmark : model.getBookmarks()) {
-            Picasso.with(context).load(bookmark.getFaviconUrl()).fetch();
-        }
         for (int i = 0; i < imageViewId.length; i++) {
             //reset the image view so nothing shows if favicon is not there
             remoteViews.setImageViewResource(imageViewId[i], android.R.color.transparent);
@@ -70,9 +73,12 @@ public class BrowserEdgePlusReceiver extends SlookCocktailProvider {
                 Bookmark currentBookmark = model.getBookmark(i);
                 remoteViews.setTextViewText(textViewId[i], currentBookmark.getShortUrl());
                 if (currentBookmark.useFavicon()) {
+                    networkCalls++;
+                    SlookTarget target = new SlookTarget(imageViewId[i], context, cocktailIds);
+                    targets.add(target);
+                    Picasso.with(context).setLoggingEnabled(true);
                     Picasso.with(context).load(currentBookmark.getFaviconUrl())
-                            .networkPolicy(NetworkPolicy.OFFLINE)
-                            .into(remoteViews, imageViewId[i], cocktailIds);
+                            .into(target);
                 } else {
                     Drawable tileDrawable = ViewUtils.getTileDrawableEdge(context, currentBookmark.getTextOption(), currentBookmark.getColorId());
                     remoteViews.setImageViewBitmap(imageViewId[i], ViewUtils.drawableToBitmap(tileDrawable));
@@ -114,4 +120,46 @@ public class BrowserEdgePlusReceiver extends SlookCocktailProvider {
             }
         }
     }
+
+   public class SlookTarget implements Target {
+       private int imageViewId;
+       private Context context;
+       private int[] cocktailId;
+
+       public SlookTarget(int imageViewId, Context context, int[] cocktailId) {
+           this.imageViewId = imageViewId;
+           this.context = context;
+           this.cocktailId = cocktailId;
+       }
+
+       @Override
+       public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
+           completedCalls++;
+           remoteViews.setImageViewBitmap(imageViewId, bitmap);
+           updateSlookIfNecessary();
+       }
+
+       @Override
+       public void onBitmapFailed(Drawable errorDrawable) {
+           completedCalls++;
+           updateSlookIfNecessary();
+       }
+
+       @Override
+       public void onPrepareLoad(Drawable placeHolderDrawable) {
+
+       }
+
+       private void updateSlookIfNecessary() {
+           if (completedCalls == networkCalls) {
+
+               for (int i = 0; i < cocktailId.length; i++) {
+                   SlookCocktailManager.getInstance(context)
+                           .updateCocktail(cocktailId[i], remoteViews);
+               }
+               networkCalls = 0;
+               completedCalls = 0;
+           }
+       }
+   }
 }
