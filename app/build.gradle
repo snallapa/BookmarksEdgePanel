@@ -39,6 +39,7 @@ dependencies {
     compile 'commons-io:commons-io:2.4'
     compile 'org.parceler:parceler-api:1.1.5'
     compile 'com.amulyakhare:com.amulyakhare.textdrawable:1.0.1'
+    compile 'uk.co.chrisjenx:calligraphy:2.1.0'
     apt 'org.parceler:parceler:1.1.5'
     apt 'com.jakewharton:butterknife-compiler:8.4.0'
     compile 'com.jakewharton.picasso:picasso2-okhttp3-downloader:1.0.2'
@@ -48,4 +49,5 @@ dependencies {
     }
     compile 'com.google.firebase:firebase-ads:9.0.2'
     apply plugin: 'com.google.gms.google-services'
+
 }

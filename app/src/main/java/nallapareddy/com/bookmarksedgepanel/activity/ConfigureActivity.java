@@ -1,9 +1,12 @@
 package nallapareddy.com.bookmarksedgepanel.activity;
 
+import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.util.SparseBooleanArray;
 import android.view.ActionMode;
 import android.view.Menu;
@@ -37,6 +40,7 @@ import nallapareddy.com.bookmarksedgepanel.model.BookmarkModel;
 import nallapareddy.com.bookmarksedgepanel.model.IBookmarkModel;
 import nallapareddy.com.bookmarksedgepanel.tasks.UrlDetailedTask;
 import nallapareddy.com.bookmarksedgepanel.utils.ModelUtils;
+import uk.co.chrisjenx.calligraphy.CalligraphyContextWrapper;
 
 
 public class ConfigureActivity extends AppCompatActivity implements AddNewBookmarkDialog.onNewBookmarkAddedListener, UrlDetailedTask.onUrlDetailedTaskFinished {
@@ -53,6 +57,11 @@ public class ConfigureActivity extends AppCompatActivity implements AddNewBookma
 
     @BindView(R.id.bookmarks_listview)
     ListView bookmarksList;
+    @BindView(R.id.add_bookmark)
+    FloatingActionButton fab;
+
+    private boolean deleteMode;
+    private ActionMode actionMode;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -64,7 +73,24 @@ public class ConfigureActivity extends AppCompatActivity implements AddNewBookma
         bookmarksAdapter = new BookmarksAdapter(this, model.getBookmarks());
         bookmarksList.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE_MODAL);
         bookmarksList.setAdapter(bookmarksAdapter);
+        setupBookmarkListener();
+        updateUrlInformation();
+        setupFab();
 
+        Slook slook = new Slook();
+        try {
+            slook.initialize(this);
+        } catch (Exception e) {
+            Log.e("Configure", "SLOOK not initialized");
+        }
+    }
+
+    @Override
+    protected void attachBaseContext(Context base) {
+        super.attachBaseContext(CalligraphyContextWrapper.wrap(base));
+    }
+
+    private void setupBookmarkListener() {
         bookmarksList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
@@ -79,12 +105,18 @@ public class ConfigureActivity extends AppCompatActivity implements AddNewBookma
             @Override
             public void onItemCheckedStateChanged(ActionMode actionMode, int position, long l, boolean b) {
                 bookmarksAdapter.toggleSelection(position);
+                if (bookmarksAdapter.getSelection().size() == 0) {
+                    deleteMode = false;
+                    setupFab();
+                }
+                setupFab();
             }
 
             @Override
             public boolean onCreateActionMode(ActionMode actionMode, Menu menu) {
-                getMenuInflater().inflate(R.menu.action_bar_multi_choice, menu);
+                deleteMode = true;
                 bookmarksAdapter.setSelectionMode(true);
+                ConfigureActivity.this.actionMode = actionMode;
                 return true;
             }
 
@@ -95,55 +127,57 @@ public class ConfigureActivity extends AppCompatActivity implements AddNewBookma
 
             @Override
             public boolean onActionItemClicked(ActionMode actionMode, MenuItem menuItem) {
-                switch (menuItem.getItemId()) {
-                    case R.id.action_delete_bookmark:
-                        SparseBooleanArray selection = bookmarksAdapter.getSelection();
-                        for (int i = model.size() - 1; i >= 0; i--) {
-                            if (selection.get(i)) {
-                                model.getBookmark(i).setCanceled(true);
-                                model.removeBookmark(i);
-                            }
-                        }
-                        invalidateOptionsMenu();
-                        actionMode.finish();
-                        model.save();
-                }
                 return false;
             }
 
             @Override
             public void onDestroyActionMode(ActionMode actionMode) {
                 bookmarksAdapter.resetSelection();
+                ConfigureActivity.this.actionMode = null;
+                deleteMode = false;
+                setupFab();
             }
         });
-        updateUrlInformation();
+    }
 
-        Slook slook = new Slook();
-        try {
-            slook.initialize(this);
-        } catch (Exception e) {
+    private void setupFab() {
+        fab.setImageResource(deleteMode ? R.drawable.ic_delete_white : R.drawable.ic_add_white);
+        boolean enabled = model.size() < 6 || deleteMode;
+        int color = enabled ? R.color.colorAccent : R.color.gray;
+        fab.setBackgroundTintList(getResources().getColorStateList(color, getTheme()));
+        fab.setEnabled(enabled);
+        fab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (deleteMode) {
+                    deleteBookmarks();
+                } else {
+                    openAddDialog();
+                }
 
+            }
+        });
+    }
+
+    private void openAddDialog() {
+        android.app.FragmentManager supportFragmentManager = getFragmentManager();
+        AddNewBookmarkDialog newBookmarkDialog = new AddNewBookmarkDialog();
+        newBookmarkDialog.show(supportFragmentManager, AddNewBookmarkDialog.TAG);
+    }
+
+    private void deleteBookmarks() {
+        SparseBooleanArray selection = bookmarksAdapter.getSelection();
+        for (int i = model.size() - 1; i >= 0; i--) {
+            if (selection.get(i)) {
+                model.getBookmark(i).setCanceled(true);
+                model.removeBookmark(i);
+            }
         }
+        actionMode.finish();
+        model.save();
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        MenuInflater menuInflater = getMenuInflater();
-        menuInflater.inflate(R.menu.action_bar_menu, menu);
-        return super.onCreateOptionsMenu(menu);
-    }
 
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.action_add_bookmark:
-                android.app.FragmentManager supportFragmentManager = getFragmentManager();
-                AddNewBookmarkDialog newBookmarkDialog = new AddNewBookmarkDialog();
-                newBookmarkDialog.show(supportFragmentManager, AddNewBookmarkDialog.TAG);
-                return true;
-        }
-        return super.onOptionsItemSelected(item);
-    }
 
     @Override
     public void newBookmarkAdded(String uri) {
@@ -152,7 +186,7 @@ public class ConfigureActivity extends AppCompatActivity implements AddNewBookma
             model.addBookmark(new Bookmark(newBookmark));
         }
         bookmarksAdapter.notifyDataSetChanged();
-        invalidateOptionsMenu();
+        setupFab();
         updateUrlInformation();
         model.save();
     }
@@ -163,13 +197,6 @@ public class ConfigureActivity extends AppCompatActivity implements AddNewBookma
         model.save();
     }
 
-    @Override
-    public boolean onPrepareOptionsMenu(Menu menu) {
-        if (model.size() > 5) {
-            menu.findItem(R.id.action_add_bookmark).setEnabled(false);
-        }
-        return true;
-    }
 
     private void updateUrlInformation() {
         for (Bookmark bookmark : model.getBookmarks()) {
