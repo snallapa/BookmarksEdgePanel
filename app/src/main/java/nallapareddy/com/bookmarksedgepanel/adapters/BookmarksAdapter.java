@@ -1,7 +1,9 @@
 package nallapareddy.com.bookmarksedgepanel.adapters;
 
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.drawable.Drawable;
+import android.net.Uri;
 import android.text.Html;
 import android.util.SparseBooleanArray;
 import android.view.LayoutInflater;
@@ -43,7 +45,15 @@ public class BookmarksAdapter extends ArrayAdapter<Bookmark> {
             viewHolder = (ViewHolder) convertView.getTag();
         }
         Bookmark currentBookmark = getItem(position);
-        viewHolder.bookmarkUri.setText(currentBookmark.getUri().toString());
+        final String url = currentBookmark.getUri().toString();
+        viewHolder.bookmarkUri.setText(Html.fromHtml(String.format("<a href='%s'>%s</a>", url, url)));
+        viewHolder.bookmarkUri.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("http://" + url));
+                getContext().startActivity(browserIntent);
+            }
+        });
         viewHolder.bookmarkTitle.setVisibility(currentBookmark.isFullInfo() ? View.VISIBLE : View.GONE);
         viewHolder.bookmarkTitle.setText(currentBookmark.getTitle() == null ? "" : currentBookmark.getSafeTitle());
         viewHolder.checkBox.setVisibility(selectionMode ? View.VISIBLE : View.GONE);
