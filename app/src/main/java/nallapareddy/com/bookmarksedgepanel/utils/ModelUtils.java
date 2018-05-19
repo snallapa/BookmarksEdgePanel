@@ -7,6 +7,8 @@ import android.net.Uri;
 import android.text.TextUtils;
 import android.util.Log;
 
+import com.crashlytics.android.Crashlytics;
+
 import org.apache.commons.io.FileUtils;
 
 import java.io.File;
@@ -109,6 +111,12 @@ public class ModelUtils {
         } catch (IOException exception) {
             Log.e("PREFERENCES", "Could not read from file");
             return getBookmarks(context);
+        } catch (Exception e) {
+            Crashlytics.logException(e);
+            if (bookmarksFile.exists()) {
+                bookmarksFile.delete();
+            }
+            return new ArrayList<>();
         }
     }
 

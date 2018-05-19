@@ -16,6 +16,7 @@ import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.ListView;
 
+import com.crashlytics.android.Crashlytics;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdView;
 import com.google.android.gms.ads.MobileAds;
@@ -91,7 +92,7 @@ public class ConfigureActivity extends AppCompatActivity implements AddNewBookma
                 intent.putExtra(EXTRA_POSITION, position);
                 startActivityForResult(intent, REQUEST_CODE);
             }
-        });
+        });/**/
 
         bookmarksList.setMultiChoiceModeListener(new AbsListView.MultiChoiceModeListener() {
             @Override
@@ -161,7 +162,14 @@ public class ConfigureActivity extends AppCompatActivity implements AddNewBookma
         SparseBooleanArray selection = bookmarksAdapter.getSelection();
         for (int i = model.size() - 1; i >= 0; i--) {
             if (selection.get(i)) {
-                model.getBookmark(i).setCanceled(true);
+                Bookmark bookmark = model.getBookmark(i);
+                bookmark.setCanceled(true);
+                try {
+                    deleteFile(bookmark.getFileSafe());
+                } catch (Exception e) {
+                    Crashlytics.logException(e);
+                }
+
                 model.removeBookmark(i);
             }
         }

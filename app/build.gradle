@@ -40,7 +40,7 @@ dependencies {
     implementation 'uk.co.chrisjenx:calligraphy:2.3.0'
     annotationProcessor 'org.parceler:parceler:1.1.5'
     implementation 'com.jakewharton.picasso:picasso2-okhttp3-downloader:1.0.2'
-    implementation('com.crashlytics.sdk.android:crashlytics:2.6.5@aar') {
+    implementation('com.crashlytics.sdk.android:crashlytics:2.9.2@aar') {
         transitive = true;
     }
     implementation 'com.google.firebase:firebase-core:15.0.2'

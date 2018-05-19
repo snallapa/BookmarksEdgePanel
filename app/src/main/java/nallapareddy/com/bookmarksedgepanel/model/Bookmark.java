@@ -3,7 +3,6 @@ package nallapareddy.com.bookmarksedgepanel.model;
 import android.net.Uri;
 import android.text.Html;
 import android.text.Spanned;
-import android.util.Log;
 
 import org.parceler.Parcel;
 
@@ -46,6 +45,10 @@ public class Bookmark {
     public void setUri(Uri uri) {
         this.uri = uri;
         setFaviconUrl(uri);
+    }
+
+    public String getFileSafe() {
+        return this.uri.toString();
     }
 
     public String getTitle() {
