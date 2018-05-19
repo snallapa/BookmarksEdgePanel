@@ -6,20 +6,15 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
-import android.location.Location;
 import android.net.Uri;
 import android.util.Log;
 import android.widget.RemoteViews;
 
-import com.jakewharton.picasso.OkHttp3Downloader;
 import com.samsung.android.sdk.look.cocktailbar.SlookCocktailManager;
 import com.samsung.android.sdk.look.cocktailbar.SlookCocktailProvider;
-import com.squareup.picasso.MemoryPolicy;
-import com.squareup.picasso.NetworkPolicy;
 import com.squareup.picasso.Picasso;
 import com.squareup.picasso.Target;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -28,9 +23,7 @@ import nallapareddy.com.bookmarksedgepanel.activity.ConfigureActivity;
 import nallapareddy.com.bookmarksedgepanel.model.Bookmark;
 import nallapareddy.com.bookmarksedgepanel.model.BookmarkModel;
 import nallapareddy.com.bookmarksedgepanel.model.IBookmarkModel;
-import nallapareddy.com.bookmarksedgepanel.utils.ModelUtils;
 import nallapareddy.com.bookmarksedgepanel.utils.ViewUtils;
-import okhttp3.OkHttpClient;
 
 public class BrowserEdgePlusReceiver extends SlookCocktailProvider {
 

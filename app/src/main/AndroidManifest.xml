@@ -14,12 +14,14 @@
         android:theme="@style/AppTheme">
         <activity
             android:name=".activity.ConfigureActivity"
-            android:launchMode="singleTask"></activity>
+            android:launchMode="singleTask"/>
+
         <activity android:name=".activity.EditBookmarkActivity"
             android:windowSoftInputMode="adjustNothing"/>
 
         <receiver android:name=".receivers.BrowserEdgePlusReceiver"
             android:exported="true">
+
             <intent-filter>
                 <action android:name="com.samsung.android.cocktail.v2.action.COCKTAIL_UPDATE" />
             </intent-filter>

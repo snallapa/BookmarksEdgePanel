@@ -10,36 +10,28 @@ import android.util.Log;
 import android.util.SparseBooleanArray;
 import android.view.ActionMode;
 import android.view.Menu;
-import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.ListView;
 
-import com.crashlytics.android.Crashlytics;
 import com.google.android.gms.ads.AdRequest;
-import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.AdView;
 import com.google.android.gms.ads.MobileAds;
 import com.samsung.android.sdk.look.Slook;
 
 import org.parceler.Parcels;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import butterknife.BindView;
 import butterknife.ButterKnife;
-import io.fabric.sdk.android.Fabric;
 import nallapareddy.com.bookmarksedgepanel.R;
 import nallapareddy.com.bookmarksedgepanel.adapters.BookmarksAdapter;
-import nallapareddy.com.bookmarksedgepanel.model.Bookmark;
 import nallapareddy.com.bookmarksedgepanel.dialogs.AddNewBookmarkDialog;
+import nallapareddy.com.bookmarksedgepanel.model.Bookmark;
 import nallapareddy.com.bookmarksedgepanel.model.BookmarkModel;
 import nallapareddy.com.bookmarksedgepanel.model.IBookmarkModel;
 import nallapareddy.com.bookmarksedgepanel.tasks.UrlDetailedTask;
-import nallapareddy.com.bookmarksedgepanel.utils.ModelUtils;
 import uk.co.chrisjenx.calligraphy.CalligraphyContextWrapper;
 
 
@@ -232,7 +224,7 @@ public class ConfigureActivity extends AppCompatActivity implements AddNewBookma
 
     private void initializeAds() {
         MobileAds.initialize(getApplicationContext(), AD_CODE);
-        AdView adView = ButterKnife.findById(this, R.id.adView);
+        AdView adView = findViewById(R.id.adView);
         AdRequest adRequest = new AdRequest.Builder().build();
         adView.loadAd(adRequest);
     }

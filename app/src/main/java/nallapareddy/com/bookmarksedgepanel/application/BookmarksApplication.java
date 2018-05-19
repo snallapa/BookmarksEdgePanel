@@ -2,7 +2,6 @@ package nallapareddy.com.bookmarksedgepanel.application;
 
 
 import android.app.Application;
-import android.content.Context;
 
 import com.crashlytics.android.Crashlytics;
 import com.jakewharton.picasso.OkHttp3Downloader;
@@ -12,7 +11,6 @@ import io.fabric.sdk.android.Fabric;
 import nallapareddy.com.bookmarksedgepanel.R;
 import okhttp3.OkHttpClient;
 import uk.co.chrisjenx.calligraphy.CalligraphyConfig;
-import uk.co.chrisjenx.calligraphy.CalligraphyContextWrapper;
 
 public class BookmarksApplication extends Application {
 

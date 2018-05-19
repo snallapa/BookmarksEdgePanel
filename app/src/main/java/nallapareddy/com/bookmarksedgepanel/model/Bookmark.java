@@ -3,6 +3,7 @@ package nallapareddy.com.bookmarksedgepanel.model;
 import android.net.Uri;
 import android.text.Html;
 import android.text.Spanned;
+import android.util.Log;
 
 import org.parceler.Parcel;
 
@@ -83,8 +84,9 @@ public class Bookmark {
         String uriString = uri.toString();
         uriString = uriString.replace("http://", "").replace("https://", "");
         //low quality favicon image faviconUrl = "https://www.google.com/s2/favicons?domain_url=http%3A%2F%2F" + uriString;
-        faviconUrl = "https://www.google.com/s2/favicons?domain_url=http%3A%2F%2F" + uriString;
+        //faviconUrl = "https://www.google.com/s2/favicons?domain_url=http%3A%2F%2F" + uriString;
         //faviconUrl = "https://icons.better-idea.org/icon?url=" + uriString.trim() + "&size=40";
+        faviconUrl = "http://icons.duckduckgo.com/ip2/" + uriString.trim() + ".ico";
     }
 
     public String getShortUrl() {
