@@ -13,8 +13,12 @@ import android.widget.RemoteViews;
 import com.crashlytics.android.Crashlytics;
 import com.samsung.android.sdk.look.cocktailbar.SlookCocktailManager;
 import com.samsung.android.sdk.look.cocktailbar.SlookCocktailProvider;
+import com.squareup.picasso.Picasso;
+import com.squareup.picasso.Target;
 
+import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 
 import nallapareddy.com.bookmarksedgepanel.R;
 import nallapareddy.com.bookmarksedgepanel.activity.ConfigureActivity;
@@ -56,13 +60,47 @@ public class BrowserEdgePlusReceiver extends SlookCocktailProvider {
             //reset the image view so nothing shows if favicon is not there
             remoteViews.setImageViewResource(imageViewId[i], android.R.color.transparent);
             if (i < model.size()) {
-                Bookmark currentBookmark = model.getBookmark(i);
+                final Bookmark currentBookmark = model.getBookmark(i);
                 remoteViews.setTextViewText(textViewId[i], currentBookmark.getShortUrl());
                 if (currentBookmark.useFavicon()) {
                     try {
-                        FileInputStream fileInputStream = context.openFileInput(currentBookmark.getFileSafe());
-                        Bitmap b = BitmapFactory.decodeStream(fileInputStream);
-                        remoteViews.setImageViewBitmap(imageViewId[i], b);
+                        File fileStreamPath = context.getFileStreamPath(currentBookmark.getFileSafe());
+                        if (fileStreamPath.exists()) {
+                            FileInputStream fileInputStream = context.openFileInput(currentBookmark.getFileSafe());
+                            Bitmap b = BitmapFactory.decodeStream(fileInputStream);
+                            remoteViews.setImageViewBitmap(imageViewId[i], b);
+                        } else {
+                            final int finalI = i;
+                            Target target = new Target() {
+                                @Override
+                                public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
+                                    try {
+                                        remoteViews.setImageViewBitmap(imageViewId[finalI], bitmap);
+                                        String filename = currentBookmark.getFileSafe();
+                                        File fileStreamPath = context.getFileStreamPath(filename);
+                                        if (!fileStreamPath.exists()) {
+                                            FileOutputStream outputStream = context.openFileOutput(filename, Context.MODE_PRIVATE);
+                                            bitmap.compress(Bitmap.CompressFormat.PNG, 100, outputStream);
+                                            outputStream.close();
+                                        }
+                                    } catch (Exception e) {
+                                        Crashlytics.logException(e);
+                                        e.printStackTrace();
+                                    }
+                                }
+
+                                @Override
+                                public void onBitmapFailed(Drawable errorDrawable) {
+
+                                }
+
+                                @Override
+                                public void onPrepareLoad(Drawable placeHolderDrawable) {
+
+                                }
+                            };
+                            Picasso.with(context).load(currentBookmark.getFaviconUrl()).into(target);
+                        }
                     } catch (Exception e) {
                         Crashlytics.logException(e);
                         e.printStackTrace();

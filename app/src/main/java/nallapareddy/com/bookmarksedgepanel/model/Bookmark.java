@@ -6,6 +6,8 @@ import android.text.Spanned;
 
 import org.parceler.Parcel;
 
+import java.net.URLEncoder;
+
 @Parcel
 public class Bookmark {
     Uri uri;
@@ -48,7 +50,9 @@ public class Bookmark {
     }
 
     public String getFileSafe() {
-        return this.uri.toString();
+        String fileName = this.uri.toString().replace("https://", "")
+                .replace("http://", "");
+        return URLEncoder.encode(fileName);
     }
 
     public String getTitle() {
