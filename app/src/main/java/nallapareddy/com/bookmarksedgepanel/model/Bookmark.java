@@ -3,6 +3,7 @@ package nallapareddy.com.bookmarksedgepanel.model;
 import android.net.Uri;
 import android.text.Html;
 import android.text.Spanned;
+import android.text.TextUtils;
 
 import org.parceler.Parcel;
 
@@ -22,7 +23,7 @@ public class Bookmark {
     int colorPosition;
 
     public Bookmark() {
-
+        colorPosition = 0;
     }
 
     public Bookmark(Uri uri) {
@@ -128,7 +129,7 @@ public class Bookmark {
         this.useFavicon = useFavicon;
     }
 
-    public String getTextOption() {
+    private String getTextOption() {
         return textOption;
     }
 
@@ -154,6 +155,18 @@ public class Bookmark {
 
     public Spanned getSafeTitle() {
         return Html.fromHtml(getTitle());
+    }
+
+    public String getTileText() {
+        if (TextUtils.isEmpty(getTextOption())) {
+            if (TextUtils.isEmpty(getShortUrl())) {
+                return  "";
+            } else {
+                return Character.toUpperCase(getShortUrl().charAt(0)) + "";
+            }
+        } else {
+            return getTextOption();
+        }
     }
 
     @Override

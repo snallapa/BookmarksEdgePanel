@@ -31,9 +31,9 @@ public class BrowserEdgePlusReceiver extends SlookCocktailProvider {
 
     private static final String BOOKMARK_CLICKED = "bookmark_clicked";
 
-    private int[] imageViewId = {R.id.edge_row_favicon_1, R.id.edge_row_favicon_2, R.id.edge_row_favicon_3, R.id.edge_row_favicon_4, R.id.edge_row_favicon_5, R.id.edge_row_favicon_6};
-    private int[] textViewId = {R.id.edge_row_uri_1, R.id.edge_row_uri_2, R.id.edge_row_uri_3, R.id.edge_row_uri_4, R.id.edge_row_uri_5, R.id.edge_row_uri_6};
-    private int[] bookmarkId = {R.id.bookmark_1, R.id.bookmark_2, R.id.bookmark_3, R.id.bookmark_4, R.id.bookmark_5, R.id.bookmark_6};
+    private int[] imageViewId = {R.id.edge_row_favicon_1, R.id.edge_row_favicon_2, R.id.edge_row_favicon_3, R.id.edge_row_favicon_4, R.id.edge_row_favicon_5, R.id.edge_row_favicon_6, R.id.edge_row_favicon_7, R.id.edge_row_favicon_8,     R.id.edge_row_favicon_9, R.id.edge_row_favicon_10, R.id.edge_row_favicon_11, R.id.edge_row_favicon_12};
+    private int[] textViewId = {R.id.edge_row_uri_1, R.id.edge_row_uri_2, R.id.edge_row_uri_3, R.id.edge_row_uri_4, R.id.edge_row_uri_5, R.id.edge_row_uri_6, R.id.edge_row_uri_7, R.id.edge_row_uri_8, R.id.edge_row_uri_9, R.id.edge_row_uri_10, R.id.edge_row_uri_11, R.id.edge_row_uri_12};
+    private int[] bookmarkId = {R.id.bookmark_1, R.id.bookmark_2, R.id.bookmark_3, R.id.bookmark_4, R.id.bookmark_5, R.id.bookmark_6, R.id.bookmark_7, R.id.bookmark_8, R.id.bookmark_9, R.id.bookmark_10, R.id.bookmark_11, R.id.bookmark_12};
     private RemoteViews remoteViews;
 
     @Override
@@ -106,7 +106,7 @@ public class BrowserEdgePlusReceiver extends SlookCocktailProvider {
                         e.printStackTrace();
                     }
                 } else {
-                    Drawable tileDrawable = ViewUtils.getTileDrawableEdge(context, currentBookmark.getTextOption(), currentBookmark.getColorId());
+                    Drawable tileDrawable = ViewUtils.getTileDrawableEdge(context, currentBookmark.getTileText(), currentBookmark.getColorId());
                     remoteViews.setImageViewBitmap(imageViewId[i], ViewUtils.drawableToBitmap(tileDrawable));
                 }
 

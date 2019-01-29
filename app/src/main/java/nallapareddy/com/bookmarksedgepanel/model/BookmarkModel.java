@@ -10,6 +10,7 @@ import nallapareddy.com.bookmarksedgepanel.utils.ModelUtils;
 public class BookmarkModel implements IBookmarkModel<Bookmark> {
     private List<Bookmark> bookmarks;
     private Context context;
+    public static final int LIMIT = 12;
 
     public BookmarkModel(Context context) {
         this.context = context;
@@ -34,7 +35,7 @@ public class BookmarkModel implements IBookmarkModel<Bookmark> {
 
     @Override
     public void addBookmark(Bookmark bookmark) {
-        if (size() < 6) {
+        if (size() < LIMIT) {
             bookmarks.add(bookmark);
         }
     }

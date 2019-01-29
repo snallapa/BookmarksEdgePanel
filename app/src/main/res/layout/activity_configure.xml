@@ -6,11 +6,6 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
-    <ListView
-        android:id="@+id/bookmarks_listview"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent" />
-
     <com.google.android.gms.ads.AdView
         android:id="@+id/adView"
         android:layout_width="wrap_content"
@@ -20,6 +15,14 @@
         ads:adSize="BANNER"
         ads:adUnitId="@string/banner_ad_unit_id_main">
     </com.google.android.gms.ads.AdView>
+
+    <ListView
+        android:id="@+id/bookmarks_listview"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_above="@id/adView"/>
+
+
 
     <android.support.design.widget.FloatingActionButton
         android:src="@drawable/ic_add_white"

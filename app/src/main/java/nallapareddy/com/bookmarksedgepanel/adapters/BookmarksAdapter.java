@@ -3,6 +3,7 @@ package nallapareddy.com.bookmarksedgepanel.adapters;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.text.Html;
@@ -20,6 +21,8 @@ import com.squareup.picasso.Picasso;
 import com.squareup.picasso.Target;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.util.List;
 
@@ -65,38 +68,60 @@ public class BookmarksAdapter extends ArrayAdapter<Bookmark> {
         viewHolder.checkBox.setVisibility(selectionMode ? View.VISIBLE : View.GONE);
         viewHolder.checkBox.setChecked(selected.get(position));
         if (currentBookmark.useFavicon()) {
-            Target target = new Target() {
-                @Override
-                public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
-                    viewHolder.bookmarkFavicon.setImageBitmap(bitmap);
-                    try {
-                        String filename = currentBookmark.getFileSafe();
-                        File fileStreamPath = context.getFileStreamPath(filename);
-                        if (!fileStreamPath.exists()) {
-                            FileOutputStream outputStream = context.openFileOutput(filename, Context.MODE_PRIVATE);
-                            bitmap.compress(Bitmap.CompressFormat.PNG, 100, outputStream);
-                            outputStream.close();
+            File fileStreamPath = context.getFileStreamPath(currentBookmark.getFileSafe());
+            if (fileStreamPath.exists()) {
+                FileInputStream fileInputStream = null;
+                try {
+                    fileInputStream = context.openFileInput(currentBookmark.getFileSafe());
+                } catch (FileNotFoundException e) {
+                    currentBookmark.setUseFavicon(false);
+                    Drawable tileDrawable = ViewUtils.getTileDrawable(context, currentBookmark.getTileText(), currentBookmark.getColorId());
+                    viewHolder.bookmarkFavicon.setImageDrawable(tileDrawable);
+                    e.printStackTrace();
+                }
+                Bitmap b = BitmapFactory.decodeStream(fileInputStream);
+                viewHolder.bookmarkFavicon.setImageBitmap(b);
+            } else {
+                Target target = new Target() {
+                    @Override
+                    public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
+                        viewHolder.bookmarkFavicon.setImageBitmap(bitmap);
+                        try {
+                            String filename = currentBookmark.getFileSafe();
+                            File fileStreamPath = context.getFileStreamPath(filename);
+                            if (!fileStreamPath.exists()) {
+                                FileOutputStream outputStream = context.openFileOutput(filename, Context.MODE_PRIVATE);
+                                bitmap.compress(Bitmap.CompressFormat.PNG, 100, outputStream);
+                                outputStream.close();
+                            }
+                        } catch (Exception e) {
+                            Crashlytics.logException(e);
+                            e.printStackTrace();
                         }
-                    } catch (Exception e) {
-                        Crashlytics.logException(e);
-                        e.printStackTrace();
                     }
-                }
 
-                @Override
-                public void onBitmapFailed(Drawable errorDrawable) {
+                    @Override
+                    public void onBitmapFailed(Drawable errorDrawable) {
+                        viewHolder.bookmarkFavicon.setImageDrawable(errorDrawable);
+                        currentBookmark.setUseFavicon(false);
+                        Drawable tileDrawable = ViewUtils.getTileDrawable(context, currentBookmark.getTileText(), currentBookmark.getColorId());
+                        viewHolder.bookmarkFavicon.setImageDrawable(tileDrawable);
+                    }
 
-                }
+                    @Override
+                    public void onPrepareLoad(Drawable placeHolderDrawable) {
+                        viewHolder.bookmarkFavicon.setImageDrawable(placeHolderDrawable);
+                    }
+                };
+                Picasso.with(context).load(currentBookmark.getFaviconUrl())
+                        .error(R.drawable.ic_error_outline_black)
+                        .placeholder(R.drawable.ic_prepare)
+                        .into(target);
+                viewHolder.bookmarkFavicon.setTag(target);
+            }
 
-                @Override
-                public void onPrepareLoad(Drawable placeHolderDrawable) {
-
-                }
-            };
-            Picasso.with(context).load(currentBookmark.getFaviconUrl()).error(R.drawable.ic_error_outline_black).into(target);
-            viewHolder.bookmarkFavicon.setTag(target);
         } else {
-            Drawable tileDrawable = ViewUtils.getTileDrawable(context, currentBookmark.getTextOption(), currentBookmark.getColorId());
+            Drawable tileDrawable = ViewUtils.getTileDrawable(context, currentBookmark.getTileText(), currentBookmark.getColorId());
             viewHolder.bookmarkFavicon.setImageDrawable(tileDrawable);
         }
 

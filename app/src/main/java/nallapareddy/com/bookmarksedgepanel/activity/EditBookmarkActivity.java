@@ -1,6 +1,8 @@
 package nallapareddy.com.bookmarksedgepanel.activity;
 
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -19,6 +21,7 @@ import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdView;
 import com.google.android.gms.ads.MobileAds;
 import com.squareup.picasso.Picasso;
+import com.squareup.picasso.Target;
 
 import org.parceler.Parcels;
 
@@ -130,21 +133,9 @@ public class EditBookmarkActivity extends AppCompatActivity implements UrlDetail
 
     private void setupTileDisplay() {
         edgeBookmarkBackgroundColor.setAdapter(new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item, TileColors.values()));
-        String textOption = getTileText();
+        String textOption = currentBookmark.getTileText();
         edgeBookmarkBackgroundText.append(textOption);
         edgeBookmarkBackgroundColor.setSelection(currentBookmark.getColorPosition());
-    }
-
-    private String getTileText() {
-        if (TextUtils.isEmpty(currentBookmark.getTextOption())) {
-            if (TextUtils.isEmpty(currentBookmark.getShortUrl())) {
-                return  "";
-            } else {
-                return Character.toUpperCase(currentBookmark.getShortUrl().charAt(0)) + "";
-            }
-        } else {
-            return currentBookmark.getTextOption();
-        }
     }
 
     private void showOptions() {
@@ -163,7 +154,23 @@ public class EditBookmarkActivity extends AppCompatActivity implements UrlDetail
             TileColors selectedItem = (TileColors) edgeBookmarkBackgroundColor.getSelectedItem();
             edgeBookmarkDisplay.setImageDrawable(ViewUtils.getTileDrawable(getApplicationContext(), edgeBookmarkBackgroundText.getText().toString(), selectedItem.getColorId()));
         } else {
-            Picasso.with(this).load(currentBookmark.getFaviconUrl()).into(edgeBookmarkDisplay);
+            Picasso.with(this).load(currentBookmark.getFaviconUrl()).error(R.drawable.ic_error_outline_black).into(new Target() {
+                @Override
+                public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
+                    edgeBookmarkDisplay.setImageBitmap(bitmap);
+                }
+
+                @Override
+                public void onBitmapFailed(Drawable errorDrawable) {
+                    edgeBookmarkDisplay.setImageDrawable(errorDrawable);
+                    Toast.makeText(EditBookmarkActivity.this, "Favicon could not loaded", Toast.LENGTH_SHORT).show();
+                }
+
+                @Override
+                public void onPrepareLoad(Drawable placeHolderDrawable) {
+
+                }
+            });
         }
     }
 
