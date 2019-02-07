@@ -163,7 +163,7 @@ public class EditBookmarkActivity extends AppCompatActivity implements UrlDetail
                 @Override
                 public void onBitmapFailed(Drawable errorDrawable) {
                     edgeBookmarkDisplay.setImageDrawable(errorDrawable);
-                    Toast.makeText(EditBookmarkActivity.this, "Favicon could not loaded", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(EditBookmarkActivity.this, R.string.favicon_error, Toast.LENGTH_SHORT).show();
                 }
 
                 @Override

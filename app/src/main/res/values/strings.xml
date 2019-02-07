@@ -10,6 +10,7 @@
     <string name="bookmark_url_hint">URL</string>
     <string name="favicon_image">favicon</string>
     <string name="error_url">Invalid URL</string>
+    <string name="favicon_error">Favicon could not loaded</string>
     <string name="bookmark_url">Bookmark Url:</string>
     <string name="bookmark_title">Bookmark Title:</string>
     <string name="bookmark_edge_name">Edge Name:</string>

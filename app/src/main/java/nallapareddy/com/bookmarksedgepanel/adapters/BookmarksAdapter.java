@@ -17,6 +17,8 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.crashlytics.android.Crashlytics;
+import com.crashlytics.android.answers.Answers;
+import com.crashlytics.android.answers.CustomEvent;
 import com.squareup.picasso.Picasso;
 import com.squareup.picasso.Target;
 
@@ -102,6 +104,9 @@ public class BookmarksAdapter extends ArrayAdapter<Bookmark> {
 
                     @Override
                     public void onBitmapFailed(Drawable errorDrawable) {
+                        Answers.getInstance().logCustom(new CustomEvent("Favicon Failed")
+                                .putCustomAttribute("Bookmark", currentBookmark.getUri().toString())
+                                .putCustomAttribute("Favicon Url", currentBookmark.getFaviconUrl()));
                         viewHolder.bookmarkFavicon.setImageDrawable(errorDrawable);
                         currentBookmark.setUseFavicon(false);
                         Drawable tileDrawable = ViewUtils.getTileDrawable(context, currentBookmark.getTileText(), currentBookmark.getColorId());

@@ -11,6 +11,8 @@ import android.net.Uri;
 import android.widget.RemoteViews;
 
 import com.crashlytics.android.Crashlytics;
+import com.crashlytics.android.answers.Answers;
+import com.crashlytics.android.answers.CustomEvent;
 import com.samsung.android.sdk.look.cocktailbar.SlookCocktailManager;
 import com.samsung.android.sdk.look.cocktailbar.SlookCocktailProvider;
 import com.squareup.picasso.Picasso;
@@ -132,7 +134,10 @@ public class BrowserEdgePlusReceiver extends SlookCocktailProvider {
             IBookmarkModel<Bookmark> model = new BookmarkModel(context);
             int index = Integer.parseInt(action.replace(BOOKMARK_CLICKED, ""));
             if (index < model.size()) {
-                Uri currentUri = model.getBookmark(index).getUri();
+                Bookmark bookmark = model.getBookmark(index);
+                Answers.getInstance().logCustom(new CustomEvent("Open Bookmark")
+                        .putCustomAttribute("Bookmark", bookmark.getUri().toString()));
+                Uri currentUri = bookmark.getUri();
                 if (!currentUri.toString().startsWith("http://") && !currentUri.toString().startsWith("https://")) {
                     currentUri = Uri.parse("http://" + currentUri.toString());
                 }
