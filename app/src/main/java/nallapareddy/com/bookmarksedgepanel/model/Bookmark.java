@@ -45,6 +45,7 @@ public class Bookmark {
         return uri;
     }
 
+
     public void setUri(Uri uri) {
         this.uri = uri;
         setFaviconUrl(uri);
@@ -54,6 +55,14 @@ public class Bookmark {
         String fileName = this.uri.toString().replace("https://", "")
                 .replace("http://", "");
         return URLEncoder.encode(fileName);
+    }
+
+    public Uri getBrowserUri() {
+        Uri currentUri = getUri();
+        if (!currentUri.toString().startsWith("http://") && !currentUri.toString().startsWith("https://")) {
+            currentUri = Uri.parse("http://" + currentUri.toString());
+        }
+        return currentUri;
     }
 
     public String getTitle() {

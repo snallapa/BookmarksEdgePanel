@@ -137,10 +137,8 @@ public class BrowserEdgePlusReceiver extends SlookCocktailProvider {
                 Bookmark bookmark = model.getBookmark(index);
                 Answers.getInstance().logCustom(new CustomEvent("Open Bookmark")
                         .putCustomAttribute("Bookmark", bookmark.getUri().toString()));
-                Uri currentUri = bookmark.getUri();
-                if (!currentUri.toString().startsWith("http://") && !currentUri.toString().startsWith("https://")) {
-                    currentUri = Uri.parse("http://" + currentUri.toString());
-                }
+                Uri currentUri = bookmark.getBrowserUri();
+
                 Intent browserIntent = new Intent(Intent.ACTION_VIEW, currentUri);
                 browserIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 context.startActivity(browserIntent);

@@ -5,7 +5,6 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.Drawable;
-import android.net.Uri;
 import android.text.Html;
 import android.util.SparseBooleanArray;
 import android.view.LayoutInflater;
@@ -61,7 +60,7 @@ public class BookmarksAdapter extends ArrayAdapter<Bookmark> {
         viewHolder.bookmarkUri.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("http://" + url));
+                Intent browserIntent = new Intent(Intent.ACTION_VIEW, currentBookmark.getBrowserUri());
                 context.startActivity(browserIntent);
             }
         });

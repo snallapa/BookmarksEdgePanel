@@ -139,7 +139,7 @@ public class ConfigureActivity extends AppCompatActivity implements AddNewBookma
     }
 
     private void setupFab() {
-        fab.setImageResource(deleteMode ? R.drawable.ic_delete_white : R.drawable.ic_add_white);
+        fab.setImageResource(deleteMode ? R.drawable.ic_delete_white : R.drawable.ic_add_pure_white);
         boolean enabled = model.size() < BookmarkModel.LIMIT || deleteMode;
         int color = enabled ? R.color.colorAccent : R.color.gray;
         fab.setBackgroundTintList(getResources().getColorStateList(color, getTheme()));
