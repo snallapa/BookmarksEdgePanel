@@ -3,7 +3,7 @@
     package="nallapareddy.com.bookmarksedgepanel">
 
     <uses-permission android:name="com.samsung.android.providers.context.permission.WRITE_USE_APP_FEATURE_SURVEY" />
-    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="androidmet.permission.INTERNET" />
 
     <application
         android:name=".application.BookmarksApplication"
@@ -37,6 +37,9 @@
         <meta-data
             android:name="io.fabric.ApiKey"
             android:value="dd18e0deed880a81110179cd8e299d94e5b7a815" />
+        <meta-data
+            android:name="com.google.android.gms.ads.APPLICATION_ID"
+            android:value="ca-app-pub-3135803015555141~4955511510"/>
 
     </application>
 
