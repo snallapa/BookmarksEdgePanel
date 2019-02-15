@@ -76,8 +76,7 @@ public class BookmarksAdapter extends ArrayAdapter<Bookmark> {
                     fileInputStream = context.openFileInput(currentBookmark.getFileSafe());
                 } catch (FileNotFoundException e) {
                     currentBookmark.setUseFavicon(false);
-                    Drawable tileDrawable = ViewUtils.getTileDrawable(context, currentBookmark.getTileText(), currentBookmark.getColorId());
-                    viewHolder.bookmarkFavicon.setImageDrawable(tileDrawable);
+                    setTileDrawable(viewHolder, currentBookmark);
                     e.printStackTrace();
                 }
                 Bitmap b = BitmapFactory.decodeStream(fileInputStream);
@@ -102,14 +101,12 @@ public class BookmarksAdapter extends ArrayAdapter<Bookmark> {
                     }
 
                     @Override
-                    public void onBitmapFailed(Drawable errorDrawable) {
+                    public void onBitmapFailed(Exception e, Drawable errorDrawable) {
                         Answers.getInstance().logCustom(new CustomEvent("Favicon Failed")
                                 .putCustomAttribute("Bookmark", currentBookmark.getUri().toString())
                                 .putCustomAttribute("Favicon Url", currentBookmark.getFaviconUrl()));
-                        viewHolder.bookmarkFavicon.setImageDrawable(errorDrawable);
                         currentBookmark.setUseFavicon(false);
-                        Drawable tileDrawable = ViewUtils.getTileDrawable(context, currentBookmark.getTileText(), currentBookmark.getColorId());
-                        viewHolder.bookmarkFavicon.setImageDrawable(tileDrawable);
+                        setTileDrawable(viewHolder, currentBookmark);
                     }
 
                     @Override
@@ -117,7 +114,7 @@ public class BookmarksAdapter extends ArrayAdapter<Bookmark> {
                         viewHolder.bookmarkFavicon.setImageDrawable(placeHolderDrawable);
                     }
                 };
-                Picasso.with(context).load(currentBookmark.getFaviconUrl())
+                Picasso.get().load(currentBookmark.getFaviconUrl())
                         .error(R.drawable.ic_error_outline_black)
                         .placeholder(R.drawable.ic_prepare)
                         .into(target);
@@ -125,11 +122,16 @@ public class BookmarksAdapter extends ArrayAdapter<Bookmark> {
             }
 
         } else {
-            Drawable tileDrawable = ViewUtils.getTileDrawable(context, currentBookmark.getTileText(), currentBookmark.getColorId());
-            viewHolder.bookmarkFavicon.setImageDrawable(tileDrawable);
+            setTileDrawable(viewHolder, currentBookmark);
         }
 
         return convertView;
+    }
+
+    private void setTileDrawable(ViewHolder vh, Bookmark currentBookmark) {
+        Context context = getContext();
+        Drawable tileDrawable = ViewUtils.getTileDrawable(context, currentBookmark.getTileText(), currentBookmark.getColorId());
+        vh.bookmarkFavicon.setImageDrawable(tileDrawable);
     }
 
     public void toggleSelection(int position) {

@@ -9,6 +9,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.widget.RemoteViews;
+import android.widget.Toast;
 
 import com.crashlytics.android.Crashlytics;
 import com.crashlytics.android.answers.Answers;
@@ -92,7 +93,7 @@ public class BrowserEdgePlusReceiver extends SlookCocktailProvider {
                                 }
 
                                 @Override
-                                public void onBitmapFailed(Drawable errorDrawable) {
+                                public void onBitmapFailed(Exception e, Drawable errorDrawable) {
 
                                 }
 
@@ -101,7 +102,7 @@ public class BrowserEdgePlusReceiver extends SlookCocktailProvider {
 
                                 }
                             };
-                            Picasso.with(context).load(currentBookmark.getFaviconUrl()).into(target);
+                            Picasso.get().load(currentBookmark.getFaviconUrl()).into(target);
                         }
                     } catch (Exception e) {
                         Crashlytics.logException(e);
@@ -138,10 +139,15 @@ public class BrowserEdgePlusReceiver extends SlookCocktailProvider {
                 Answers.getInstance().logCustom(new CustomEvent("Open Bookmark")
                         .putCustomAttribute("Bookmark", bookmark.getUri().toString()));
                 Uri currentUri = bookmark.getBrowserUri();
+                try {
+                    Intent browserIntent = new Intent(Intent.ACTION_VIEW, currentUri);
+                    browserIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    context.startActivity(browserIntent);
+                } catch (Exception e) {
+                    Crashlytics.logException(e);
+                    Toast.makeText(context, R.string.open_error, Toast.LENGTH_LONG).show();
+                }
 
-                Intent browserIntent = new Intent(Intent.ACTION_VIEW, currentUri);
-                browserIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                context.startActivity(browserIntent);
             } else {
                 Intent addNewIntent = new Intent(context, ConfigureActivity.class);
                 addNewIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);

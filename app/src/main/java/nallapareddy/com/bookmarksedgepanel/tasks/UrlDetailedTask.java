@@ -29,7 +29,7 @@ public class UrlDetailedTask extends AsyncTask<Uri, Void, String> {
     }
 
     private static final Pattern TITLE_TAG =
-            Pattern.compile("\\<title>(.*)\\</title>", Pattern.CASE_INSENSITIVE|Pattern.DOTALL);
+            Pattern.compile("<title.*>(.*)</title>", Pattern.CASE_INSENSITIVE|Pattern.DOTALL);
 
     @Override
     protected String doInBackground(Uri... uris) {

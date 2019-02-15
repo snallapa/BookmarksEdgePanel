@@ -154,14 +154,14 @@ public class EditBookmarkActivity extends AppCompatActivity implements UrlDetail
             TileColors selectedItem = (TileColors) edgeBookmarkBackgroundColor.getSelectedItem();
             edgeBookmarkDisplay.setImageDrawable(ViewUtils.getTileDrawable(getApplicationContext(), edgeBookmarkBackgroundText.getText().toString(), selectedItem.getColorId()));
         } else {
-            Picasso.with(this).load(currentBookmark.getFaviconUrl()).error(R.drawable.ic_error_outline_black).into(new Target() {
+            Picasso.get().load(currentBookmark.getFaviconUrl()).error(R.drawable.ic_error_outline_black).into(new Target() {
                 @Override
                 public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
                     edgeBookmarkDisplay.setImageBitmap(bitmap);
                 }
 
                 @Override
-                public void onBitmapFailed(Drawable errorDrawable) {
+                public void onBitmapFailed(Exception e, Drawable errorDrawable) {
                     edgeBookmarkDisplay.setImageDrawable(errorDrawable);
                     Toast.makeText(EditBookmarkActivity.this, R.string.favicon_error, Toast.LENGTH_SHORT).show();
                 }
