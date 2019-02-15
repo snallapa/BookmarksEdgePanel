@@ -13,7 +13,7 @@ public class BookmarkModel implements IBookmarkModel<Bookmark> {
     public static final int LIMIT = 12;
 
     public BookmarkModel(Context context) {
-        this.context = context;
+        this.context = context.getApplicationContext();
         ModelUtils.convertPreferences(context);
         bookmarks = ModelUtils.readItems(context);
     }
