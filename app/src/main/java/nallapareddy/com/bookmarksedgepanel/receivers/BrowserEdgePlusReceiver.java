@@ -12,8 +12,6 @@ import android.widget.RemoteViews;
 import android.widget.Toast;
 
 import com.crashlytics.android.Crashlytics;
-import com.crashlytics.android.answers.Answers;
-import com.crashlytics.android.answers.CustomEvent;
 import com.samsung.android.sdk.look.cocktailbar.SlookCocktailManager;
 import com.samsung.android.sdk.look.cocktailbar.SlookCocktailProvider;
 import com.squareup.picasso.Picasso;
@@ -56,14 +54,16 @@ public class BrowserEdgePlusReceiver extends SlookCocktailProvider {
 
     }
 
+
     private void update(final Context context, int[] cocktailIds) {
         remoteViews = new RemoteViews(context.getPackageName(), R.layout.layout_edge_panel);
         IBookmarkModel<Bookmark> model = new BookmarkModel(context.getApplicationContext());
         for (int i = 0; i < imageViewId.length; i++) {
             //reset the image view so nothing shows if favicon is not there
             remoteViews.setImageViewResource(imageViewId[i], android.R.color.transparent);
-            if (i < model.size()) {
-                final Bookmark currentBookmark = model.getBookmark(i);
+            int edgeBookmark = model.getBookmarkForEdgePosition(i);
+            if (edgeBookmark != -1) {
+                final Bookmark currentBookmark = model.getBookmark(edgeBookmark);
                 remoteViews.setTextViewText(textViewId[i], currentBookmark.getShortUrl());
                 if (currentBookmark.useFavicon()) {
                     try {
@@ -117,7 +117,7 @@ public class BrowserEdgePlusReceiver extends SlookCocktailProvider {
                 remoteViews.setTextViewText(textViewId[i], context.getString(R.string.add_bookmark));
                 remoteViews.setImageViewResource(imageViewId[i], R.drawable.ic_add_white);
             }
-            remoteViews.setOnClickPendingIntent(bookmarkId[i], getPendingSelfIntent(context, BOOKMARK_CLICKED + "" + i));
+            remoteViews.setOnClickPendingIntent(bookmarkId[i], getPendingSelfIntent(context, BOOKMARK_CLICKED + "" + edgeBookmark));
         }
     }
 
@@ -134,10 +134,10 @@ public class BrowserEdgePlusReceiver extends SlookCocktailProvider {
         if (action.startsWith(BOOKMARK_CLICKED)) {
             IBookmarkModel<Bookmark> model = new BookmarkModel(context);
             int index = Integer.parseInt(action.replace(BOOKMARK_CLICKED, ""));
-            if (index < model.size()) {
+            if (index != -1) {
                 Bookmark bookmark = model.getBookmark(index);
-                Answers.getInstance().logCustom(new CustomEvent("Open Bookmark")
-                        .putCustomAttribute("Bookmark", bookmark.getUri().toString()));
+//                Answers.getInstance().logCustom(new CustomEvent("Open Bookmark")
+//                        .putCustomAttribute("Bookmark", bookmark.getUri().toString()));
                 Uri currentUri = bookmark.getBrowserUri();
                 try {
                     Intent browserIntent = new Intent(Intent.ACTION_VIEW, currentUri);

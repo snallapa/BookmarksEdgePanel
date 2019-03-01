@@ -12,6 +12,10 @@ public interface IBookmarkModel<K> {
 
     K getBookmark(int position);
 
+    int getBookmarkForEdgePosition(int position);
+
+    void setEdgePosition(int oldPosition, int newPosition);
+
     void removeBookmark(int position);
 
     void addBookmark(K bookmark);

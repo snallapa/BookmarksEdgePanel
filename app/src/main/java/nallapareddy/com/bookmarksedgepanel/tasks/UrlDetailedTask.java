@@ -21,10 +21,12 @@ import nallapareddy.com.bookmarksedgepanel.utils.ContentType;
 public class UrlDetailedTask extends AsyncTask<Uri, Void, String> {
 
     private Bookmark bookmark;
+    private int position;
     private onUrlDetailedTaskFinished urlDetailedTaskFinished;
 
-    public UrlDetailedTask(Bookmark bookmark, onUrlDetailedTaskFinished urlDetailedTaskFinished) {
+    public UrlDetailedTask(Bookmark bookmark, int position, onUrlDetailedTaskFinished urlDetailedTaskFinished) {
         this.bookmark = bookmark;
+        this.position = position;
         this.urlDetailedTaskFinished = urlDetailedTaskFinished;
     }
 
@@ -86,19 +88,19 @@ public class UrlDetailedTask extends AsyncTask<Uri, Void, String> {
                 && !title.toLowerCase().contains("302 found")) {
             bookmark.setTitle(title.replace("\n", ""));
             bookmark.setFullInfo(true);
-            urlDetailedTaskFinished.finishedTask();
+            urlDetailedTaskFinished.finishedTask(this.position);
         } else {
             bookmark.setFullInfo(false);
             if (!bookmark.hasProtocol() && !bookmark.isTryHttp()) {
                 bookmark.setTryHttp(true);
-                urlDetailedTaskFinished.retryDetailedTask(bookmark);
+                urlDetailedTaskFinished.retryDetailedTask(bookmark, this.position);
             }
         }
     }
 
     public interface onUrlDetailedTaskFinished {
-        void retryDetailedTask(Bookmark bookmark);
+        void retryDetailedTask(Bookmark bookmark, int position);
 
-        void finishedTask();
+        void finishedTask(int position);
     }
 }

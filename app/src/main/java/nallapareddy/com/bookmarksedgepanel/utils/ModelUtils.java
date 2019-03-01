@@ -8,16 +8,20 @@ import android.text.TextUtils;
 import android.util.Log;
 
 import com.crashlytics.android.Crashlytics;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 
 import org.apache.commons.io.FileUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 import nallapareddy.com.bookmarksedgepanel.model.Bookmark;
+import nallapareddy.com.bookmarksedgepanel.model.BookmarkModel;
 
 import static android.content.Context.MODE_PRIVATE;
 
@@ -46,15 +50,60 @@ public class ModelUtils {
         editor.commit();
     }
 
-    public static void writeItems(Context context, List<Bookmark> bookmarks) {
+    public static boolean writeItems(Context context, List<Bookmark> bookmarks) {
         File filesDir = context.getFilesDir();
-        File bookmarksFile = new File(filesDir, "bookmarks-new.txt");
+        Gson gson = new Gson();
+        File bookmarksFile = new File(filesDir, "bookmarks.json");
         try {
-            FileUtils.writeLines(bookmarksFile, bookmarks);
-        } catch (IOException exception) {
-            Log.e("PREFERENCES", "Could not write to file");
-            saveBookmarks(context, bookmarks);
+            String bookmarksJson = gson.toJson(bookmarks);
+            FileUtils.write(bookmarksFile, bookmarksJson);
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+//            Crashlytics.logException(e);
         }
+        return false;
+    }
+
+    public static List<Bookmark> readItems(Context context) {
+        File filesDir = context.getFilesDir();
+        File oldFile = new File(filesDir, "bookmarks-new.txt");
+        boolean conversion = false;
+        if (oldFile.exists()) {
+            List<Bookmark> bookmarks = readLineItems(context);
+            boolean success = writeItems(context, bookmarks);
+            if (success && oldFile.delete()) {
+                conversion = true;
+                //TODO Fabric Event
+            }
+        }
+        File bookmarksFile = new File(filesDir, "bookmarks.json");
+        if (!bookmarksFile.exists()) {
+            //could be a new user
+            return new ArrayList<>();
+        }
+        try {
+            String json = FileUtils.readFileToString(bookmarksFile);
+            Gson gson = new Gson();
+            Type collectionType = new TypeToken<List<Bookmark>>(){}.getType();
+            List<Bookmark> bookmarks = gson.fromJson(json, collectionType);
+            if (conversion || (bookmarks.size() > 1 && bookmarks.get(0).getEdgePosition() == -1)) {
+                int limit = BookmarkModel.LIMIT;
+                for (int i = 0; i < bookmarks.size(); i++) {
+                    Bookmark bookmark = bookmarks.get(i);
+                    if (i < limit/2) {
+                        bookmark.setEdgePosition(i * 2);
+                    } else {
+                        bookmark.setEdgePosition(2 * i - (limit - 1));
+                    }
+                }
+            }
+            return bookmarks;
+        } catch (Exception e) {
+            e.printStackTrace();
+//            Crashlytics.logException(e);
+        }
+        return new ArrayList<>();
     }
 
     public static List<Bookmark> readOldItems(Context context) {
@@ -80,7 +129,7 @@ public class ModelUtils {
         }
     }
 
-    public static List<Bookmark> readItems(Context context) {
+    public static List<Bookmark> readLineItems(Context context) {
         File filesDir = context.getFilesDir();
         File bookmarksFile = new File(filesDir, "bookmarks-new.txt");
         try {

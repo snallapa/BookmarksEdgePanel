@@ -7,11 +7,12 @@ import android.text.TextUtils;
 
 import org.parceler.Parcel;
 
+import java.io.Serializable;
 import java.net.URLEncoder;
 
 @Parcel
-public class Bookmark {
-    Uri uri;
+public class Bookmark implements Serializable {
+    String uri;
     String title;
     boolean fullInfo;
     boolean canceled;
@@ -21,13 +22,25 @@ public class Bookmark {
     boolean useFavicon;
     String textOption;
     int colorPosition;
+    int edgePosition;
 
     public Bookmark() {
         colorPosition = 0;
+        edgePosition = -1;
     }
 
     public Bookmark(Uri uri) {
-        this.uri = uri;
+        this.uri = uri.toString();
+        setFaviconUrl(uri);
+        setShortUrl(uri);
+        title = "";
+        textOption = "";
+        useFavicon = true;
+    }
+
+    public Bookmark(Uri uri, int edgePosition) {
+        this.uri = uri.toString();
+        this.edgePosition = edgePosition;
         setFaviconUrl(uri);
         setShortUrl(uri);
         title = "";
@@ -42,17 +55,25 @@ public class Bookmark {
     }
 
     public Uri getUri() {
-        return uri;
+        return Uri.parse(uri);
     }
 
 
     public void setUri(Uri uri) {
-        this.uri = uri;
+        this.uri = uri.toString();
         setFaviconUrl(uri);
     }
 
+    public int getEdgePosition() {
+        return edgePosition;
+    }
+
+    public void setEdgePosition(int edgePosition) {
+        this.edgePosition = edgePosition;
+    }
+
     public String getFileSafe() {
-        String fileName = this.uri.toString().replace("https://", "")
+        String fileName = this.uri.replace("https://", "")
                 .replace("http://", "");
         return URLEncoder.encode(fileName);
     }

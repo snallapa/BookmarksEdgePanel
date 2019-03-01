@@ -16,22 +16,15 @@
         ads:adUnitId="@string/banner_ad_unit_id_main">
     </com.google.android.gms.ads.AdView>
 
-    <ListView
-        android:id="@+id/bookmarks_listview"
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/bookmarks_grid_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_above="@id/adView"/>
-
-
-
-    <android.support.design.widget.FloatingActionButton
-        android:src="@drawable/ic_add_pure_white"
-        android:id="@+id/add_bookmark"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
         android:layout_above="@id/adView"
-        android:layout_alignParentEnd="true"
-        android:layout_marginEnd="16dp"
-        android:layout_marginBottom="16dp"/>
+        android:layout_alignParentTop="true"
+        android:paddingStart="32dp"
+        android:paddingEnd="32dp"
+        android:paddingBottom="20dp"
+        android:clipToPadding="false"/>
 
 </RelativeLayout>

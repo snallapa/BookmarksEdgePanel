@@ -176,7 +176,7 @@ public class EditBookmarkActivity extends AppCompatActivity implements UrlDetail
 
     @OnClick(R.id.reset_bookmark)
     public void resetBookmark() {
-        new UrlDetailedTask(currentBookmark, this).execute(currentBookmark.getUri());
+        new UrlDetailedTask(currentBookmark, currentPosition,this).execute(currentBookmark.getUri());
     }
 
     @OnItemSelected(R.id.edge_bookmark_display_options)
@@ -195,12 +195,12 @@ public class EditBookmarkActivity extends AppCompatActivity implements UrlDetail
     }
 
     @Override
-    public void retryDetailedTask(Bookmark bookmark) {
-        new UrlDetailedTask(bookmark, this).execute(bookmark.getUri());
+    public void retryDetailedTask(Bookmark bookmark, int position) {
+        new UrlDetailedTask(bookmark, position,this).execute(bookmark.getUri());
     }
 
     @Override
-    public void finishedTask() {
+    public void finishedTask(int currentPosition) {
         currentBookmark.setUseFavicon(true);
         updateViews();
     }

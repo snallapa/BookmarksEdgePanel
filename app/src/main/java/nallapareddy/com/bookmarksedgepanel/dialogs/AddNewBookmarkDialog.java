@@ -19,10 +19,23 @@ public class AddNewBookmarkDialog extends DialogFragment {
     public static String TAG = "bookmark_dialog_tag";
 
     private EditText editText;
+    private int position;
+
+    public static AddNewBookmarkDialog newInstance(int position) {
+        AddNewBookmarkDialog f = new AddNewBookmarkDialog();
+
+        // Supply num input as an argument.
+        Bundle args = new Bundle();
+        args.putInt("position", position);
+        f.setArguments(args);
+
+        return f;
+    }
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+        this.position = getArguments().getInt("position");
         builder.setTitle(R.string.add_bookmark_title);
         builder.setNegativeButton(android.R.string.cancel, null);
         builder.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
@@ -41,7 +54,7 @@ public class AddNewBookmarkDialog extends DialogFragment {
     }
 
     public interface onNewBookmarkAddedListener {
-        void newBookmarkAdded(String uri);
+        void newBookmarkAdded(String uri, int edgePosition);
     }
 
     private void commit() {
@@ -52,7 +65,7 @@ public class AddNewBookmarkDialog extends DialogFragment {
         }
 
         if (getActivity() instanceof onNewBookmarkAddedListener) {
-            ((onNewBookmarkAddedListener) getActivity()).newBookmarkAdded(urlText);
+            ((onNewBookmarkAddedListener) getActivity()).newBookmarkAdded(urlText, this.position);
         } else {
             Log.e("AddNewBookmarkDialog", "Activity does not implement bookmark added listener");
         }
