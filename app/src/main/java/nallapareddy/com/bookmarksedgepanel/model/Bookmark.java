@@ -159,7 +159,7 @@ public class Bookmark {
     }
 
     public boolean hasProtocol() {
-        return uri.toString().startsWith("http://") || uri.toString().startsWith("https://");
+        return uri.startsWith("http://") || uri.startsWith("https://");
     }
 
     public Spanned getSafeTitle() {
@@ -184,7 +184,7 @@ public class Bookmark {
         shortUrl = shortUrl == null ? "" : shortUrl.replace("\n", "");
         textOption = textOption == null ? "" : textOption.replace("\n", "");
         return String.format("%s\n%s\n%s\n%s\n%s\n%s\n%s",
-                uri.toString().trim(),
+                uri.trim(),
                 title.trim(),
                 fullInfo,
                 shortUrl.trim(),
