@@ -11,7 +11,7 @@ import java.net.URLEncoder;
 
 @Parcel
 public class Bookmark {
-    Uri uri;
+    String uri;
     String title;
     boolean fullInfo;
     boolean canceled;
@@ -27,7 +27,7 @@ public class Bookmark {
     }
 
     public Bookmark(Uri uri) {
-        this.uri = uri;
+        this.uri = uri.toString();
         setFaviconUrl(uri);
         setShortUrl(uri);
         title = "";
@@ -42,17 +42,17 @@ public class Bookmark {
     }
 
     public Uri getUri() {
-        return uri;
+        return Uri.parse(uri);
     }
 
 
     public void setUri(Uri uri) {
-        this.uri = uri;
+        this.uri = uri.toString();
         setFaviconUrl(uri);
     }
 
     public String getFileSafe() {
-        String fileName = this.uri.toString().replace("https://", "")
+        String fileName = this.uri.replace("https://", "")
                 .replace("http://", "");
         return URLEncoder.encode(fileName);
     }

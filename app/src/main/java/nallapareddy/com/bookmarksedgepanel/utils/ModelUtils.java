@@ -8,11 +8,14 @@ import android.text.TextUtils;
 import android.util.Log;
 
 import com.crashlytics.android.Crashlytics;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 
 import org.apache.commons.io.FileUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -31,13 +34,6 @@ public class ModelUtils {
     private static final String DELIMITER = "@";
     private static final String DELIMITER_NEW = "^";
 
-    private static void saveBookmarks(Context context, List<Bookmark> bookmarks) {
-        SharedPreferences preferences = context.getSharedPreferences(PREFERENCE_KEYS, MODE_PRIVATE);
-        SharedPreferences.Editor editor = preferences.edit();
-        editor.putString(BOOKMARKS_URI, convertUriToString(bookmarks));
-        editor.putString(BOOKMARKS_TITLES, concatTitles(bookmarks));
-        editor.commit();
-    }
 
     private static void clear(Context context) {
         SharedPreferences preferences = context.getSharedPreferences(PREFERENCE_KEYS, MODE_PRIVATE);
@@ -46,15 +42,48 @@ public class ModelUtils {
         editor.commit();
     }
 
-    public static void writeItems(Context context, List<Bookmark> bookmarks) {
+    public static boolean writeItems(Context context, List<Bookmark> bookmarks) {
         File filesDir = context.getFilesDir();
-        File bookmarksFile = new File(filesDir, "bookmarks-new.txt");
+        Gson gson = new Gson();
+        File bookmarksFile = new File(filesDir, "bookmarks.json");
         try {
-            FileUtils.writeLines(bookmarksFile, bookmarks);
-        } catch (IOException exception) {
-            Log.e("PREFERENCES", "Could not write to file");
-            saveBookmarks(context, bookmarks);
+            String bookmarksJson = gson.toJson(bookmarks);
+            FileUtils.write(bookmarksFile, bookmarksJson);
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+//            Crashlytics.logException(e);
         }
+        return false;
+    }
+
+    public static List<Bookmark> readItems(Context context) {
+        File filesDir = context.getFilesDir();
+        File oldFile = new File(filesDir, "bookmarks-new.txt");
+        boolean conversion = false;
+        if (oldFile.exists()) {
+            List<Bookmark> bookmarks = readLineItems(context);
+            boolean success = writeItems(context, bookmarks);
+            if (success && oldFile.delete()) {
+                conversion = true;
+                //TODO Fabric Event
+            }
+        }
+        File bookmarksFile = new File(filesDir, "bookmarks.json");
+        if (!bookmarksFile.exists()) {
+            //could be a new user
+            return new ArrayList<>();
+        }
+        try {
+            String json = FileUtils.readFileToString(bookmarksFile);
+            Gson gson = new Gson();
+            Type collectionType = new TypeToken<List<Bookmark>>(){}.getType();
+            return gson.fromJson(json, collectionType);
+        } catch (Exception e) {
+            e.printStackTrace();
+//            Crashlytics.logException(e);
+        }
+        return new ArrayList<>();
     }
 
     public static List<Bookmark> readOldItems(Context context) {
@@ -80,7 +109,7 @@ public class ModelUtils {
         }
     }
 
-    public static List<Bookmark> readItems(Context context) {
+    public static List<Bookmark> readLineItems(Context context) {
         File filesDir = context.getFilesDir();
         File bookmarksFile = new File(filesDir, "bookmarks-new.txt");
         try {
@@ -118,27 +147,6 @@ public class ModelUtils {
             }
             return new ArrayList<>();
         }
-    }
-
-    private static String convertUriToString(List<Bookmark> bookmarks) {
-        String savedString = "";
-        for (Bookmark bookmark : bookmarks) {
-            savedString += DELIMITER + bookmark.getUri().toString();
-        }
-        return TextUtils.isEmpty(savedString) ? savedString : savedString.substring(1);
-    }
-
-    private static String concatTitles(List<Bookmark> bookmarks) {
-        String savedString = "";
-        for (Bookmark bookmark : bookmarks) {
-            String title = bookmark.getTitle();
-            if (!TextUtils.isEmpty(title)) {
-                savedString += DELIMITER + title;
-            } else {
-                savedString += DELIMITER + NO_TITLE;
-            }
-        }
-        return TextUtils.isEmpty(savedString) ? savedString : savedString.substring(1);
     }
 
     private static List<Bookmark> getBookmarks(Context context) {

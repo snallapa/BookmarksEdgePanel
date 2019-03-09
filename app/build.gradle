@@ -48,6 +48,7 @@ dependencies {
     implementation 'uk.co.chrisjenx:calligraphy:2.3.0'
     annotationProcessor 'org.parceler:parceler:1.1.5'
     implementation 'com.squareup.picasso:picasso:2.71828'
+    implementation 'com.google.code.gson:gson:2.8.5'
     compile('com.crashlytics.sdk.android:crashlytics:2.9.9@aar') {
         transitive = true;
     }
