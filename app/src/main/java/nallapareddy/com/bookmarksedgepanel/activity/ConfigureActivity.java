@@ -17,6 +17,8 @@ import android.widget.AdapterView;
 import android.widget.ListView;
 
 import com.crashlytics.android.Crashlytics;
+import com.crashlytics.android.answers.Answers;
+import com.crashlytics.android.answers.CustomEvent;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdView;
 import com.google.android.gms.ads.MobileAds;
@@ -88,8 +90,8 @@ public class ConfigureActivity extends AppCompatActivity implements AddNewBookma
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
                 Bookmark bookmark = model.getBookmark(position);
-//                Answers.getInstance().logCustom(new CustomEvent("Edit Bookmark")
-//                        .putCustomAttribute("Bookmark", bookmark.getUri().toString()));
+                Answers.getInstance().logCustom(new CustomEvent("Edit Bookmark")
+                        .putCustomAttribute("Bookmark", bookmark.getUri().toString()));
                 Intent intent = new Intent(ConfigureActivity.this, EditBookmarkActivity.class);
                 intent.putExtra(EXTRA_BOOKMARK, Parcels.wrap(bookmark));
                 intent.putExtra(EXTRA_POSITION, position);
@@ -167,8 +169,8 @@ public class ConfigureActivity extends AppCompatActivity implements AddNewBookma
             if (selection.get(i)) {
                 Bookmark bookmark = model.getBookmark(i);
                 bookmark.setCanceled(true);
-//                Answers.getInstance().logCustom(new CustomEvent("Delete Bookmark")
-//                        .putCustomAttribute("Bookmark", bookmark.getUri().toString()));
+                Answers.getInstance().logCustom(new CustomEvent("Delete Bookmark")
+                        .putCustomAttribute("Bookmark", bookmark.getUri().toString()));
                 try {
                     deleteFile(bookmark.getFileSafe());
                 } catch (Exception e) {
@@ -194,8 +196,8 @@ public class ConfigureActivity extends AppCompatActivity implements AddNewBookma
         setupFab();
         updateUrlInformation();
         model.save();
-//        Answers.getInstance().logCustom(new CustomEvent("New Bookmark")
-//                .putCustomAttribute("Bookmark", uri));
+        Answers.getInstance().logCustom(new CustomEvent("New Bookmark")
+                .putCustomAttribute("Bookmark", uri));
     }
 
     @Override

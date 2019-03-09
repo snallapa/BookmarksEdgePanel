@@ -8,6 +8,8 @@ import android.text.TextUtils;
 import android.util.Log;
 
 import com.crashlytics.android.Crashlytics;
+import com.crashlytics.android.answers.Answers;
+import com.crashlytics.android.answers.CustomEvent;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
@@ -52,10 +54,22 @@ public class ModelUtils {
             return true;
         } catch (Exception e) {
             e.printStackTrace();
-//            Crashlytics.logException(e);
+            Crashlytics.logException(e);
         }
+        writeOldItems(context,bookmarks);
         return false;
     }
+
+    public static void writeOldItems(Context context, List<Bookmark> bookmarks) {
+        File filesDir = context.getFilesDir();
+        File bookmarksFile = new File(filesDir, "bookmarks-new.txt");
+        try {
+            FileUtils.writeLines(bookmarksFile, bookmarks);
+        } catch (IOException exception) {
+            Log.e("PREFERENCES", "Could not write to file");
+        }
+    }
+
 
     public static List<Bookmark> readItems(Context context) {
         File filesDir = context.getFilesDir();
@@ -66,7 +80,11 @@ public class ModelUtils {
             boolean success = writeItems(context, bookmarks);
             if (success && oldFile.delete()) {
                 conversion = true;
-                //TODO Fabric Event
+            }
+            Answers.getInstance().logCustom(new CustomEvent("Converted File")
+                    .putCustomAttribute("success", conversion + ""));
+            if (!conversion) {
+                return bookmarks;
             }
         }
         File bookmarksFile = new File(filesDir, "bookmarks.json");
@@ -81,7 +99,7 @@ public class ModelUtils {
             return gson.fromJson(json, collectionType);
         } catch (Exception e) {
             e.printStackTrace();
-//            Crashlytics.logException(e);
+            Crashlytics.logException(e);
         }
         return new ArrayList<>();
     }
