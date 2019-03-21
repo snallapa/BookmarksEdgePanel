@@ -8,8 +8,8 @@ android {
         applicationId "nallapareddy.com.browseredgepanel"
         minSdkVersion 23
         targetSdkVersion 28
-        versionCode 16
-        versionName "2.93"
+        versionCode 17
+        versionName "2.94"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         multiDexEnabled true
 
