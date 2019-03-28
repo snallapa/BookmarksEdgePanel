@@ -31,6 +31,7 @@ import butterknife.OnItemSelected;
 import butterknife.OnTextChanged;
 import nallapareddy.com.bookmarksedgepanel.R;
 import nallapareddy.com.bookmarksedgepanel.model.Bookmark;
+import nallapareddy.com.bookmarksedgepanel.model.Position;
 import nallapareddy.com.bookmarksedgepanel.model.TileColors;
 import nallapareddy.com.bookmarksedgepanel.utils.ViewUtils;
 
@@ -55,7 +56,7 @@ public class EditBookmarkActivity extends AppCompatActivity {
     Spinner edgeBookmarkBackgroundColor;
 
     private Bookmark currentBookmark;
-    private int currentPosition;
+    private Position currentPosition;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -64,10 +65,8 @@ public class EditBookmarkActivity extends AppCompatActivity {
         ButterKnife.bind(this);
         initializeAds();
         currentBookmark = Parcels.unwrap(getIntent().getParcelableExtra(ConfigureActivity.EXTRA_BOOKMARK));
-        currentPosition = getIntent().getIntExtra(ConfigureActivity.EXTRA_POSITION, -1);
-        if (currentPosition == -1) {
-            throw new RuntimeException("No position was sent");
-        }
+        String stringPos = getIntent().getStringExtra(ConfigureActivity.EXTRA_POSITION);
+        currentPosition = Position.fromString(stringPos);
         updateViews();
     }
 
@@ -105,7 +104,7 @@ public class EditBookmarkActivity extends AppCompatActivity {
         currentBookmark.setTextOption(edgeBookmarkBackgroundText.getText().toString().replace("\n", ""));
         Intent data = new Intent();
         data.putExtra(ConfigureActivity.EXTRA_BOOKMARK, Parcels.wrap(currentBookmark));
-        data.putExtra(ConfigureActivity.EXTRA_POSITION, currentPosition);
+        data.putExtra(ConfigureActivity.EXTRA_POSITION, currentPosition.toString());
         setResult(RESULT_OK, data);
         finish();
     }

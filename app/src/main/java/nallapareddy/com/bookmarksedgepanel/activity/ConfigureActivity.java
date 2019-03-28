@@ -98,7 +98,7 @@ public class ConfigureActivity extends AppCompatActivity implements AddNewBookma
 //                        .putCustomAttribute("Bookmark", bookmark.getUri().toString()));
         Intent intent = new Intent(ConfigureActivity.this, EditBookmarkActivity.class);
         intent.putExtra(EXTRA_BOOKMARK, Parcels.wrap(bookmark));
-        intent.putExtra(EXTRA_POSITION, Parcels.wrap(pos));
+        intent.putExtra(EXTRA_POSITION, pos.toString());
         startActivityForResult(intent, REQUEST_CODE);
 
     }
@@ -150,7 +150,7 @@ public class ConfigureActivity extends AppCompatActivity implements AddNewBookma
             return;
         }
         if (resultCode == RESULT_OK) {
-            Position position = Parcels.unwrap(data.getParcelableExtra(EXTRA_POSITION));
+            Position position = Position.fromString(data.getStringExtra(EXTRA_POSITION));
             Bookmark currentBookmark = Parcels.unwrap(data.getParcelableExtra(EXTRA_BOOKMARK));
             model.setBookmark(position, currentBookmark);
             gridAdapter.notifyTranslatedItemChanged(position);

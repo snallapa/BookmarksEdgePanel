@@ -125,7 +125,7 @@ public class Bookmark implements Serializable {
     }
 
     public boolean hasProtocol() {
-        return uri.toString().startsWith("http://") || uri.toString().startsWith("https://");
+        return uri.startsWith("http://") || uri.startsWith("https://");
     }
 
     public String getTileText() {
@@ -145,7 +145,7 @@ public class Bookmark implements Serializable {
         shortUrl = shortUrl == null ? "" : shortUrl.replace("\n", "");
         textOption = textOption == null ? "" : textOption.replace("\n", "");
         return String.format("%s\n%s\n%s\n%s\n%s\n%s\n%s",
-                uri.toString().trim(),
+                uri.trim(),
                 shortUrl.trim(),
                 useFavicon,
                 textOption,

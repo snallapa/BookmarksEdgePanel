@@ -8,6 +8,8 @@ import android.text.TextUtils;
 import android.util.Log;
 
 import com.crashlytics.android.Crashlytics;
+import com.crashlytics.android.answers.Answers;
+import com.crashlytics.android.answers.CustomEvent;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
@@ -34,13 +36,6 @@ public class ModelUtils {
     private static final String DELIMITER = "@";
     private static final String DELIMITER_NEW = "^";
 
-    private static void saveBookmarks(Context context, List<Bookmark> bookmarks) {
-        SharedPreferences preferences = context.getSharedPreferences(PREFERENCE_KEYS, MODE_PRIVATE);
-        SharedPreferences.Editor editor = preferences.edit();
-        editor.putString(BOOKMARKS_URI, convertUriToString(bookmarks));
-        editor.putString(BOOKMARKS_TITLES, concatTitles(bookmarks));
-        editor.commit();
-    }
 
     private static void clear(Context context) {
         SharedPreferences preferences = context.getSharedPreferences(PREFERENCE_KEYS, MODE_PRIVATE);
@@ -59,10 +54,22 @@ public class ModelUtils {
             return true;
         } catch (Exception e) {
             e.printStackTrace();
-//            Crashlytics.logException(e);
+            Crashlytics.logException(e);
         }
+        writeOldItems(context,bookmarks);
         return false;
     }
+
+    public static void writeOldItems(Context context, List<Bookmark> bookmarks) {
+        File filesDir = context.getFilesDir();
+        File bookmarksFile = new File(filesDir, "bookmarks-new.txt");
+        try {
+            FileUtils.writeLines(bookmarksFile, bookmarks);
+        } catch (IOException exception) {
+            Log.e("PREFERENCES", "Could not write to file");
+        }
+    }
+
 
     public static List<Bookmark> readItems(Context context) {
         File filesDir = context.getFilesDir();
@@ -73,7 +80,11 @@ public class ModelUtils {
             boolean success = writeItems(context, bookmarks);
             if (success && oldFile.delete()) {
                 conversion = true;
-                //TODO Fabric Event
+            }
+            Answers.getInstance().logCustom(new CustomEvent("Converted File")
+                    .putCustomAttribute("success", conversion + ""));
+            if (!conversion) {
+                return bookmarks;
             }
         }
         File bookmarksFile = new File(filesDir, "bookmarks.json");
@@ -85,11 +96,10 @@ public class ModelUtils {
             String json = FileUtils.readFileToString(bookmarksFile);
             Gson gson = new Gson();
             Type collectionType = new TypeToken<List<Bookmark>>(){}.getType();
-            List<Bookmark> bookmarks = gson.fromJson(json, collectionType);
-            return bookmarks;
+            return gson.fromJson(json, collectionType);
         } catch (Exception e) {
             e.printStackTrace();
-//            Crashlytics.logException(e);
+            Crashlytics.logException(e);
         }
         return new ArrayList<>();
     }
@@ -151,22 +161,6 @@ public class ModelUtils {
             }
             return new ArrayList<>();
         }
-    }
-
-    private static String convertUriToString(List<Bookmark> bookmarks) {
-        String savedString = "";
-        for (Bookmark bookmark : bookmarks) {
-            savedString += DELIMITER + bookmark.getUri().toString();
-        }
-        return TextUtils.isEmpty(savedString) ? savedString : savedString.substring(1);
-    }
-
-    private static String concatTitles(List<Bookmark> bookmarks) {
-        String savedString = "";
-        for (Bookmark bookmark : bookmarks) {
-            savedString += DELIMITER + NO_TITLE;
-        }
-        return TextUtils.isEmpty(savedString) ? savedString : savedString.substring(1);
     }
 
     private static List<Bookmark> getBookmarks(Context context) {

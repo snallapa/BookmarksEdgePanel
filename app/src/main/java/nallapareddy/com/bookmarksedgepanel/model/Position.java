@@ -1,8 +1,5 @@
 package nallapareddy.com.bookmarksedgepanel.model;
 
-import org.parceler.Parcel;
-
-@Parcel
 public class Position {
     private int row;
     private int col;
@@ -31,5 +28,10 @@ public class Position {
         int row = Integer.parseInt(pos.substring(0, comma));
         int col = Integer.parseInt(pos.substring(comma + 1));
         return new Position(row, col);
+    }
+
+    @Override
+    public String toString() {
+        return "(" + row + "," + col + ")";
     }
 }
