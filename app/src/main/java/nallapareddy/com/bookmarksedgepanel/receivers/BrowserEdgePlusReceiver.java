@@ -25,16 +25,44 @@ import nallapareddy.com.bookmarksedgepanel.R;
 import nallapareddy.com.bookmarksedgepanel.activity.ConfigureActivity;
 import nallapareddy.com.bookmarksedgepanel.model.Bookmark;
 import nallapareddy.com.bookmarksedgepanel.model.BookmarkModel;
+import nallapareddy.com.bookmarksedgepanel.model.GridDisplayType;
 import nallapareddy.com.bookmarksedgepanel.model.IBookmarkModel;
+import nallapareddy.com.bookmarksedgepanel.model.Position;
 import nallapareddy.com.bookmarksedgepanel.utils.ViewUtils;
 
 public class BrowserEdgePlusReceiver extends SlookCocktailProvider {
 
     private static final String BOOKMARK_CLICKED = "bookmark_clicked";
+    private static int[][] imageViewId = {
+            {R.id.edge_row_favicon_1, R.id.edge_row_favicon_2},
+            {R.id.edge_row_favicon_3, R.id.edge_row_favicon_4},
+            {R.id.edge_row_favicon_5, R.id.edge_row_favicon_6},
+            {R.id.edge_row_favicon_7, R.id.edge_row_favicon_8},
+            {R.id.edge_row_favicon_9, R.id.edge_row_favicon_10},
+            {R.id.edge_row_favicon_11, R.id.edge_row_favicon_12}
 
-    private int[] imageViewId = {R.id.edge_row_favicon_1, R.id.edge_row_favicon_2, R.id.edge_row_favicon_3, R.id.edge_row_favicon_4, R.id.edge_row_favicon_5, R.id.edge_row_favicon_6, R.id.edge_row_favicon_7, R.id.edge_row_favicon_8,     R.id.edge_row_favicon_9, R.id.edge_row_favicon_10, R.id.edge_row_favicon_11, R.id.edge_row_favicon_12};
-    private int[] textViewId = {R.id.edge_row_uri_1, R.id.edge_row_uri_2, R.id.edge_row_uri_3, R.id.edge_row_uri_4, R.id.edge_row_uri_5, R.id.edge_row_uri_6, R.id.edge_row_uri_7, R.id.edge_row_uri_8, R.id.edge_row_uri_9, R.id.edge_row_uri_10, R.id.edge_row_uri_11, R.id.edge_row_uri_12};
-    private int[] bookmarkId = {R.id.bookmark_1, R.id.bookmark_2, R.id.bookmark_3, R.id.bookmark_4, R.id.bookmark_5, R.id.bookmark_6, R.id.bookmark_7, R.id.bookmark_8, R.id.bookmark_9, R.id.bookmark_10, R.id.bookmark_11, R.id.bookmark_12};
+    };
+    private static int[][] textViewId = {
+            {R.id.edge_row_uri_1, R.id.edge_row_uri_2},
+            {R.id.edge_row_uri_3, R.id.edge_row_uri_4},
+            {R.id.edge_row_uri_5, R.id.edge_row_uri_6},
+            {R.id.edge_row_uri_7, R.id.edge_row_uri_8},
+            { R.id.edge_row_uri_9, R.id.edge_row_uri_10},
+            {R.id.edge_row_uri_11, R.id.edge_row_uri_12}
+    };
+    private static int[][] bookmarkId = {
+            {R.id.bookmark_1, R.id.bookmark_2},
+            {R.id.bookmark_3, R.id.bookmark_4},
+            {R.id.bookmark_5, R.id.bookmark_6},
+            {R.id.bookmark_7, R.id.bookmark_8},
+            {R.id.bookmark_9, R.id.bookmark_10},
+            {R.id.bookmark_11, R.id.bookmark_12}
+    };
+
+    private static int[] singleImageViewId = {R.id.single_edge_row_favicon_1, R.id.single_edge_row_favicon_2, R.id.single_edge_row_favicon_3, R.id.single_edge_row_favicon_4, R.id.single_edge_row_favicon_5, R.id.single_edge_row_favicon_6};
+    private static int[] singleTextViewId = {R.id.single_edge_row_favicon_1, R.id.single_edge_row_favicon_2, R.id.single_edge_row_favicon_3, R.id.single_edge_row_favicon_4, R.id.single_edge_row_favicon_5, R.id.single_edge_row_favicon_6};
+    private static int[] singleBookmarkId = {R.id.single_bookmark_1, R.id.single_bookmark_2, R.id.single_bookmark_3, R.id.single_bookmark_4, R.id.single_bookmark_5, R.id.single_bookmark_6};
+
     private RemoteViews remoteViews;
 
     @Override
@@ -54,71 +82,89 @@ public class BrowserEdgePlusReceiver extends SlookCocktailProvider {
 
     }
 
+    private void getViewFromRemoteView(final Bookmark currentBookmark, final Context context, final int imageViewId, int textViewId, int bookmarkId, String action) {
+        if (currentBookmark == null) {
+            remoteViews.setTextViewText(textViewId, context.getString(R.string.add_bookmark));
+            remoteViews.setImageViewResource(imageViewId, R.drawable.ic_add_white);
+        } else {
+            remoteViews.setImageViewResource(imageViewId, android.R.color.transparent);
+            remoteViews.setTextViewText(textViewId, currentBookmark.getShortUrl());
+            if (currentBookmark.useFavicon()) {
+                try {
+                    File fileStreamPath = context.getFileStreamPath(currentBookmark.getFileSafe());
+                    if (fileStreamPath.exists()) {
+                        FileInputStream fileInputStream = context.openFileInput(currentBookmark.getFileSafe());
+                        Bitmap b = BitmapFactory.decodeStream(fileInputStream);
+                        remoteViews.setImageViewBitmap(imageViewId, b);
+                    } else {
 
-    private void update(final Context context, int[] cocktailIds) {
-        remoteViews = new RemoteViews(context.getPackageName(), R.layout.layout_edge_panel);
-        IBookmarkModel<Bookmark> model = new BookmarkModel(context.getApplicationContext());
-        for (int i = 0; i < imageViewId.length; i++) {
-            //reset the image view so nothing shows if favicon is not there
-            remoteViews.setImageViewResource(imageViewId[i], android.R.color.transparent);
-            int edgeBookmark = model.getBookmarkForEdgePosition(i);
-            if (edgeBookmark != -1) {
-                final Bookmark currentBookmark = model.getBookmark(edgeBookmark);
-                remoteViews.setTextViewText(textViewId[i], currentBookmark.getShortUrl());
-                if (currentBookmark.useFavicon()) {
-                    try {
-                        File fileStreamPath = context.getFileStreamPath(currentBookmark.getFileSafe());
-                        if (fileStreamPath.exists()) {
-                            FileInputStream fileInputStream = context.openFileInput(currentBookmark.getFileSafe());
-                            Bitmap b = BitmapFactory.decodeStream(fileInputStream);
-                            remoteViews.setImageViewBitmap(imageViewId[i], b);
-                        } else {
-                            final int finalI = i;
-                            Target target = new Target() {
-                                @Override
-                                public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
-                                    try {
-                                        remoteViews.setImageViewBitmap(imageViewId[finalI], bitmap);
-                                        String filename = currentBookmark.getFileSafe();
-                                        File fileStreamPath = context.getFileStreamPath(filename);
-                                        if (!fileStreamPath.exists()) {
-                                            FileOutputStream outputStream = context.openFileOutput(filename, Context.MODE_PRIVATE);
-                                            bitmap.compress(Bitmap.CompressFormat.PNG, 100, outputStream);
-                                            outputStream.close();
-                                        }
-                                    } catch (Exception e) {
-                                        Crashlytics.logException(e);
-                                        e.printStackTrace();
+                        Target target = new Target() {
+                            @Override
+                            public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
+                                try {
+                                    remoteViews.setImageViewBitmap(imageViewId, bitmap);
+                                    String filename = currentBookmark.getFileSafe();
+                                    File fileStreamPath = context.getFileStreamPath(filename);
+                                    if (!fileStreamPath.exists()) {
+                                        FileOutputStream outputStream = context.openFileOutput(filename, Context.MODE_PRIVATE);
+                                        bitmap.compress(Bitmap.CompressFormat.PNG, 100, outputStream);
+                                        outputStream.close();
                                     }
+                                } catch (Exception e) {
+                                    Crashlytics.logException(e);
+                                    e.printStackTrace();
                                 }
+                            }
 
-                                @Override
-                                public void onBitmapFailed(Exception e, Drawable errorDrawable) {
+                            @Override
+                            public void onBitmapFailed(Exception e, Drawable errorDrawable) {
 
-                                }
+                            }
 
-                                @Override
-                                public void onPrepareLoad(Drawable placeHolderDrawable) {
+                            @Override
+                            public void onPrepareLoad(Drawable placeHolderDrawable) {
 
-                                }
-                            };
-                            Picasso.get().load(currentBookmark.getFaviconUrl()).into(target);
-                        }
-                    } catch (Exception e) {
-                        Crashlytics.logException(e);
-                        e.printStackTrace();
+                            }
+                        };
+                        Picasso.get().load(currentBookmark.getFaviconUrl()).into(target);
                     }
-                } else {
-                    Drawable tileDrawable = ViewUtils.getTileDrawableEdge(context, currentBookmark.getTileText(), currentBookmark.getColorId());
-                    remoteViews.setImageViewBitmap(imageViewId[i], ViewUtils.drawableToBitmap(tileDrawable));
+                } catch (Exception e) {
+                    Crashlytics.logException(e);
+                    e.printStackTrace();
                 }
-
             } else {
-                remoteViews.setTextViewText(textViewId[i], context.getString(R.string.add_bookmark));
-                remoteViews.setImageViewResource(imageViewId[i], R.drawable.ic_add_white);
+                Drawable tileDrawable = ViewUtils.getTileDrawableEdge(context, currentBookmark.getTileText(), currentBookmark.getColorId());
+                remoteViews.setImageViewBitmap(imageViewId, ViewUtils.drawableToBitmap(tileDrawable));
             }
-            remoteViews.setOnClickPendingIntent(bookmarkId[i], getPendingSelfIntent(context, BOOKMARK_CLICKED + "" + edgeBookmark));
         }
+
+        remoteViews.setOnClickPendingIntent(bookmarkId, getPendingSelfIntent(context, action));
+    }
+
+
+    private void update(Context context, int[] cocktailIds) {
+        IBookmarkModel<Bookmark> model = new BookmarkModel(context.getApplicationContext());
+        if (model.getDisplayType() == GridDisplayType.SINGLE_COLUMN) {
+            remoteViews = new RemoteViews(context.getPackageName(), R.layout.layout_edge_panel_single);
+            for (int i = 0; i < BookmarkModel.ROWS; i++) {
+                int j = 0;
+                final Bookmark currentBookmark = model.getBookmark(new Position(i,j));
+                String pos = "(" + i + "," + j + ")";
+                String action = BOOKMARK_CLICKED + "" + pos;
+                getViewFromRemoteView(currentBookmark, context, singleImageViewId[i], singleTextViewId[i], singleBookmarkId[i], action);
+            }
+        } else {
+            remoteViews = new RemoteViews(context.getPackageName(), R.layout.layout_edge_panel);
+            for (int i = 0; i < BookmarkModel.ROWS; i++) {
+                for (int j = 0; j < BookmarkModel.COLUMNS;j++) {
+                    final Bookmark currentBookmark = model.getBookmark(new Position(i,j));
+                    String pos = "(" + i + "," + j + ")";
+                    String action = BOOKMARK_CLICKED + "" + pos;
+                    getViewFromRemoteView(currentBookmark, context, imageViewId[i][j], textViewId[i][j], bookmarkId[i][j], action);
+                }
+            }
+        }
+
     }
 
     private PendingIntent getPendingSelfIntent(Context context, String action) {
@@ -133,9 +179,11 @@ public class BrowserEdgePlusReceiver extends SlookCocktailProvider {
         String action = intent.getAction();
         if (action.startsWith(BOOKMARK_CLICKED)) {
             IBookmarkModel<Bookmark> model = new BookmarkModel(context);
-            int index = Integer.parseInt(action.replace(BOOKMARK_CLICKED, ""));
-            if (index != -1) {
-                Bookmark bookmark = model.getBookmark(index);
+            action = action.replace(BOOKMARK_CLICKED, "");
+            Position pos = Position.fromString(action);
+            Bookmark bookmark = model.getBookmark(pos);
+            if (bookmark != null) {
+
 //                Answers.getInstance().logCustom(new CustomEvent("Open Bookmark")
 //                        .putCustomAttribute("Bookmark", bookmark.getUri().toString()));
                 Uri currentUri = bookmark.getBrowserUri();

@@ -21,7 +21,6 @@ import java.util.Arrays;
 import java.util.List;
 
 import nallapareddy.com.bookmarksedgepanel.model.Bookmark;
-import nallapareddy.com.bookmarksedgepanel.model.BookmarkModel;
 
 import static android.content.Context.MODE_PRIVATE;
 
@@ -87,17 +86,6 @@ public class ModelUtils {
             Gson gson = new Gson();
             Type collectionType = new TypeToken<List<Bookmark>>(){}.getType();
             List<Bookmark> bookmarks = gson.fromJson(json, collectionType);
-            if (conversion || (bookmarks.size() > 1 && bookmarks.get(0).getEdgePosition() == -1)) {
-                int limit = BookmarkModel.LIMIT;
-                for (int i = 0; i < bookmarks.size(); i++) {
-                    Bookmark bookmark = bookmarks.get(i);
-                    if (i < limit/2) {
-                        bookmark.setEdgePosition(i * 2);
-                    } else {
-                        bookmark.setEdgePosition(2 * i - (limit - 1));
-                    }
-                }
-            }
             return bookmarks;
         } catch (Exception e) {
             e.printStackTrace();
@@ -115,8 +103,6 @@ public class ModelUtils {
             for (String bookmarkString : bookmarksString) {
                 String[] split = bookmarkString.split("\\" + DELIMITER_NEW);
                 Bookmark bookmark = new Bookmark(Uri.parse(split[0].trim()));
-                bookmark.setTitle(split[1]);
-                bookmark.setFullInfo(split[2].equals("true"));
                 bookmark.setShortUrl(split[3]);
                 bookmark.setUseFavicon(split[4].equals("true"));
                 bookmark.setTextOption(split[5]);
@@ -138,9 +124,7 @@ public class ModelUtils {
             for (int i = 0; i < bookmarksString.size(); i++) {
                 Bookmark bookmark = new Bookmark(Uri.parse(bookmarksString.get(i).trim()));
                 i++;
-                bookmark.setTitle(bookmarksString.get(i));
                 i++;
-                bookmark.setFullInfo(bookmarksString.get(i).equals("true"));
                 i++;
                 bookmark.setShortUrl(bookmarksString.get(i));
                 i++;
@@ -180,12 +164,7 @@ public class ModelUtils {
     private static String concatTitles(List<Bookmark> bookmarks) {
         String savedString = "";
         for (Bookmark bookmark : bookmarks) {
-            String title = bookmark.getTitle();
-            if (!TextUtils.isEmpty(title)) {
-                savedString += DELIMITER + title;
-            } else {
-                savedString += DELIMITER + NO_TITLE;
-            }
+            savedString += DELIMITER + NO_TITLE;
         }
         return TextUtils.isEmpty(savedString) ? savedString : savedString.substring(1);
     }
@@ -202,17 +181,7 @@ public class ModelUtils {
             if (TextUtils.isEmpty(currentUri)) {
                 continue;
             }
-
-            if (i < titleStrings.size()) {
-                String currentTitleString = titleStrings.get(i);
-                if (!TextUtils.isEmpty(currentTitleString) && !currentTitleString.trim().equals(NO_TITLE)) {
-                    bookmarks.add(new Bookmark(Uri.parse(currentUri), currentTitleString));
-                } else {
-                    bookmarks.add(new Bookmark(Uri.parse(currentUri)));
-                }
-            } else {
-                bookmarks.add(new Bookmark(Uri.parse(currentUri)));
-            }
+            bookmarks.add(new Bookmark(Uri.parse(currentUri)));
         }
         return bookmarks;
     }

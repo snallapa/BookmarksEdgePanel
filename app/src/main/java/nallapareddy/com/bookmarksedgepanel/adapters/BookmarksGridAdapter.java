@@ -28,17 +28,18 @@ import butterknife.ButterKnife;
 import nallapareddy.com.bookmarksedgepanel.R;
 import nallapareddy.com.bookmarksedgepanel.model.Bookmark;
 import nallapareddy.com.bookmarksedgepanel.model.IBookmarkModel;
+import nallapareddy.com.bookmarksedgepanel.model.Position;
 import nallapareddy.com.bookmarksedgepanel.utils.ViewUtils;
 
 public class BookmarksGridAdapter extends RecyclerView.Adapter<BookmarksGridAdapter.ItemViewHolder> implements GridItemTouchHelperCallback.ItemTouchHelperAdapter {
     private IBookmarkModel<Bookmark> model;
-    private int gridLimit;
     private OnGridItemClickListener listener;
+    private int gridLimit;
 
-    public BookmarksGridAdapter(IBookmarkModel<Bookmark> model, int gridLimit, OnGridItemClickListener listener) {
+    public BookmarksGridAdapter(IBookmarkModel<Bookmark> model, int rows, int cols, OnGridItemClickListener listener) {
         this.model = model;
-        this.gridLimit = gridLimit;
         this.listener = listener;
+        this.gridLimit = rows * cols;
     }
 
     @NonNull
@@ -49,19 +50,24 @@ public class BookmarksGridAdapter extends RecyclerView.Adapter<BookmarksGridAdap
         return new ItemViewHolder(v);
     }
 
-    public void notifyTranslatedItem(int i) {
-        notifyItemChanged(model.getBookmark(i).getEdgePosition());
+    public void notifyTranslatedItemChanged(Position pos) {
+        notifyItemChanged(pos.getRow() * 2 + pos.getCol());
+    }
+
+    private Position convertToPosition(int i) {
+        int row = i/2;
+        int col = i % 2;
+        return new Position(row, col);
     }
 
     @Override
     public void onBindViewHolder(@NonNull final ItemViewHolder viewHolder, int i) {
-        int position = model.getBookmarkForEdgePosition(i);
-        if (position == -1) {
+       final Bookmark currentBookmark = model.getBookmark(convertToPosition(i));
+        if (currentBookmark == null) {
             viewHolder.icon.setImageResource(R.drawable.ic_add_pure_black);
             viewHolder.link.setText(R.string.add_bookmark);
             return;
         }
-        final Bookmark currentBookmark = model.getBookmark(position);
         final Context context = viewHolder.icon.getContext();
         final String url = currentBookmark.getUri().toString();
         viewHolder.link.setText(Html.fromHtml(String.format("<a href='%s'>%s</a>", url, url)));
@@ -144,29 +150,10 @@ public class BookmarksGridAdapter extends RecyclerView.Adapter<BookmarksGridAdap
 
     @Override
     public boolean onItemMove(int fromPosition, int toPosition) {
-        if (fromPosition < toPosition) {
-            for (int i = fromPosition; i < toPosition; i++) {
-                int fromBookmarkPos = model.getBookmarkForEdgePosition(i);
-                int toBookmarkPos = model.getBookmarkForEdgePosition(i+1);
-                if (fromBookmarkPos != -1) {
-                    model.setEdgePosition(fromPosition, i + 1);
-                }
-                if (toBookmarkPos != -1) {
-                    model.setEdgePosition(toPosition, i);
-                }
-            }
-        } else {
-            for (int i = fromPosition; i > toPosition; i--) {
-                int fromBookmarkPos = model.getBookmarkForEdgePosition(i);
-                int toBookmarkPos = model.getBookmarkForEdgePosition(i-1);
-                if (fromBookmarkPos != -1) {
-                    model.setEdgePosition(fromPosition, i - 1);
-                }
-                if (toBookmarkPos != -1) {
-                    model.setEdgePosition(toPosition, i);
-                }
-            }
-        }
+        Bookmark from = model.getBookmark(convertToPosition(fromPosition));
+        Bookmark to = model.getBookmark(convertToPosition(toPosition));
+        model.setBookmark(convertToPosition(fromPosition), to);
+        model.setBookmark(convertToPosition(toPosition), from);
         notifyItemMoved(fromPosition, toPosition);
         return true;
     }
@@ -188,12 +175,13 @@ public class BookmarksGridAdapter extends RecyclerView.Adapter<BookmarksGridAdap
 
         @Override
         public void onClick(View view) {
-            listener.onItemClicked(getAdapterPosition());
+            int adapterPosition = getAdapterPosition();
+            listener.onItemClicked(convertToPosition(adapterPosition));
 
         }
     }
 
     public interface OnGridItemClickListener {
-        void onItemClicked(int position);
+        void onItemClicked(Position pos);
     }
 }

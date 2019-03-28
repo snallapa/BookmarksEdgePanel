@@ -1,8 +1,6 @@
 package nallapareddy.com.bookmarksedgepanel.model;
 
 import android.net.Uri;
-import android.text.Html;
-import android.text.Spanned;
 import android.text.TextUtils;
 
 import org.parceler.Parcel;
@@ -13,45 +11,23 @@ import java.net.URLEncoder;
 @Parcel
 public class Bookmark implements Serializable {
     String uri;
-    String title;
-    boolean fullInfo;
-    boolean canceled;
     String faviconUrl;
     String shortUrl;
     boolean tryHttp;
     boolean useFavicon;
     String textOption;
     int colorPosition;
-    int edgePosition;
 
     public Bookmark() {
         colorPosition = 0;
-        edgePosition = -1;
     }
 
     public Bookmark(Uri uri) {
         this.uri = uri.toString();
         setFaviconUrl(uri);
         setShortUrl(uri);
-        title = "";
         textOption = "";
         useFavicon = true;
-    }
-
-    public Bookmark(Uri uri, int edgePosition) {
-        this.uri = uri.toString();
-        this.edgePosition = edgePosition;
-        setFaviconUrl(uri);
-        setShortUrl(uri);
-        title = "";
-        textOption = "";
-        useFavicon = true;
-    }
-
-    public Bookmark(Uri uri, String title) {
-        this(uri);
-        this.title = title;
-        this.fullInfo = true;
     }
 
     public Uri getUri() {
@@ -62,14 +38,6 @@ public class Bookmark implements Serializable {
     public void setUri(Uri uri) {
         this.uri = uri.toString();
         setFaviconUrl(uri);
-    }
-
-    public int getEdgePosition() {
-        return edgePosition;
-    }
-
-    public void setEdgePosition(int edgePosition) {
-        this.edgePosition = edgePosition;
     }
 
     public String getFileSafe() {
@@ -86,29 +54,6 @@ public class Bookmark implements Serializable {
         return currentUri;
     }
 
-    public String getTitle() {
-        return title;
-    }
-
-    public void setTitle(String title) {
-        this.title = title;
-    }
-
-    public boolean isFullInfo() {
-        return fullInfo;
-    }
-
-    public void setFullInfo(boolean fullInfo) {
-        this.fullInfo = fullInfo;
-    }
-
-    public boolean isCanceled() {
-        return canceled;
-    }
-
-    public void setCanceled(boolean canceled) {
-        this.canceled = canceled;
-    }
 
     public String getFaviconUrl() {
         return faviconUrl;
@@ -183,10 +128,6 @@ public class Bookmark implements Serializable {
         return uri.toString().startsWith("http://") || uri.toString().startsWith("https://");
     }
 
-    public Spanned getSafeTitle() {
-        return Html.fromHtml(getTitle());
-    }
-
     public String getTileText() {
         if (TextUtils.isEmpty(getTextOption())) {
             if (TextUtils.isEmpty(getShortUrl())) {
@@ -201,13 +142,10 @@ public class Bookmark implements Serializable {
 
     @Override
     public String toString() {
-        title = title == null ? "" : title.replace("\n", "");
         shortUrl = shortUrl == null ? "" : shortUrl.replace("\n", "");
         textOption = textOption == null ? "" : textOption.replace("\n", "");
         return String.format("%s\n%s\n%s\n%s\n%s\n%s\n%s",
                 uri.toString().trim(),
-                title.trim(),
-                fullInfo,
                 shortUrl.trim(),
                 useFavicon,
                 textOption,

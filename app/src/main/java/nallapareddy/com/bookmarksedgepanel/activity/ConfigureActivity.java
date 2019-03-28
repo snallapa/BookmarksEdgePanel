@@ -18,8 +18,6 @@ import com.samsung.android.sdk.look.Slook;
 
 import org.parceler.Parcels;
 
-import java.util.List;
-
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import nallapareddy.com.bookmarksedgepanel.R;
@@ -29,15 +27,18 @@ import nallapareddy.com.bookmarksedgepanel.dialogs.AddNewBookmarkDialog;
 import nallapareddy.com.bookmarksedgepanel.model.Bookmark;
 import nallapareddy.com.bookmarksedgepanel.model.BookmarkModel;
 import nallapareddy.com.bookmarksedgepanel.model.IBookmarkModel;
-import nallapareddy.com.bookmarksedgepanel.tasks.UrlDetailedTask;
+import nallapareddy.com.bookmarksedgepanel.model.Position;
 import uk.co.chrisjenx.calligraphy.CalligraphyContextWrapper;
 
+import static nallapareddy.com.bookmarksedgepanel.model.BookmarkModel.COLUMNS;
+import static nallapareddy.com.bookmarksedgepanel.model.BookmarkModel.ROWS;
 
-public class ConfigureActivity extends AppCompatActivity implements AddNewBookmarkDialog.onNewBookmarkAddedListener, UrlDetailedTask.onUrlDetailedTaskFinished, BookmarksGridAdapter.OnGridItemClickListener {
+
+public class ConfigureActivity extends AppCompatActivity implements AddNewBookmarkDialog.onNewBookmarkAddedListener, BookmarksGridAdapter.OnGridItemClickListener {
 
     private final int REQUEST_CODE = 1729;
 
-    private final String AD_CODE = "ca-app-pub-3135803015555141~4955511510";
+    private static final String AD_CODE = "ca-app-pub-3135803015555141~4955511510";
 
     static final String EXTRA_BOOKMARK = "extra_bookmark";
     static final String EXTRA_POSITION = "extra_position";
@@ -56,7 +57,6 @@ public class ConfigureActivity extends AppCompatActivity implements AddNewBookma
         initializeAds();
         model = new BookmarkModel(getApplicationContext());
         setupRecyclerView();
-        updateUrlInformation();
 
         Slook slook = new Slook();
         try {
@@ -75,7 +75,7 @@ public class ConfigureActivity extends AppCompatActivity implements AddNewBookma
         bookmarksGrid.setHasFixedSize(true);
         GridLayoutManager gridLayoutManager = new GridLayoutManager(this, 2, LinearLayoutManager.VERTICAL, false);
         bookmarksGrid.setLayoutManager(gridLayoutManager);
-        gridAdapter = new BookmarksGridAdapter(model, BookmarkModel.LIMIT, this);
+        gridAdapter = new BookmarksGridAdapter(model, ROWS, COLUMNS,this);
         bookmarksGrid.setAdapter(gridAdapter);
         setupReordering();
     }
@@ -86,19 +86,19 @@ public class ConfigureActivity extends AppCompatActivity implements AddNewBookma
         itemTouchHelper.attachToRecyclerView(bookmarksGrid);
     }
 
-    private void openAddDialog(int positionOpened) {
+    private void openAddDialog(Position pos) {
         android.app.FragmentManager supportFragmentManager = getFragmentManager();
-        AddNewBookmarkDialog newBookmarkDialog = AddNewBookmarkDialog.newInstance(positionOpened);
+        AddNewBookmarkDialog newBookmarkDialog = AddNewBookmarkDialog.newInstance(pos);
         newBookmarkDialog.show(supportFragmentManager, AddNewBookmarkDialog.TAG);
     }
 
-    private void openEditActivity(int position) {
-        Bookmark bookmark = model.getBookmark(position);
+    private void openEditActivity(Position pos) {
+        Bookmark bookmark = model.getBookmark(pos);
 //                Answers.getInstance().logCustom(new CustomEvent("Edit Bookmark")
 //                        .putCustomAttribute("Bookmark", bookmark.getUri().toString()));
         Intent intent = new Intent(ConfigureActivity.this, EditBookmarkActivity.class);
         intent.putExtra(EXTRA_BOOKMARK, Parcels.wrap(bookmark));
-        intent.putExtra(EXTRA_POSITION, position);
+        intent.putExtra(EXTRA_POSITION, Parcels.wrap(pos));
         startActivityForResult(intent, REQUEST_CODE);
 
     }
@@ -126,13 +126,12 @@ public class ConfigureActivity extends AppCompatActivity implements AddNewBookma
 
 
     @Override
-    public void newBookmarkAdded(String uri, int position) {
+    public void newBookmarkAdded(String uri, Position pos) {
         Uri newBookmark = Uri.parse(uri);
         if (newBookmark != null) {
-            model.addBookmark(new Bookmark(newBookmark, position));
+            model.setBookmark(pos, new Bookmark(newBookmark));
         }
-        gridAdapter.notifyTranslatedItem(model.size() - 1);
-        updateUrlInformation();
+        gridAdapter.notifyTranslatedItemChanged(pos);
         model.save();
 //        Answers.getInstance().logCustom(new CustomEvent("New Bookmark")
 //                .putCustomAttribute("Bookmark", uri));
@@ -145,36 +144,16 @@ public class ConfigureActivity extends AppCompatActivity implements AddNewBookma
     }
 
 
-    private void updateUrlInformation() {
-        List<Bookmark> bookmarks = model.getBookmarks();
-        for (int i = 0; i < bookmarks.size(); i++) {
-            Bookmark bookmark = bookmarks.get(i);
-            if (!bookmark.isFullInfo()) {
-                new UrlDetailedTask(bookmark, i, this).execute(bookmark.getUri());
-            }
-        }
-    }
-
-    @Override
-    public void retryDetailedTask(Bookmark bookmark, int position) {
-        new UrlDetailedTask(bookmark, position, this).execute(bookmark.getUri());
-    }
-
-    @Override
-    public void finishedTask(int position) {
-        gridAdapter.notifyTranslatedItem(position);
-    }
-
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode != REQUEST_CODE) {
             return;
         }
         if (resultCode == RESULT_OK) {
-            int position = data.getIntExtra(EXTRA_POSITION, -1);
+            Position position = Parcels.unwrap(data.getParcelableExtra(EXTRA_POSITION));
             Bookmark currentBookmark = Parcels.unwrap(data.getParcelableExtra(EXTRA_BOOKMARK));
-            model.updateBookmark(position, currentBookmark);
-            gridAdapter.notifyTranslatedItem(position);
+            model.setBookmark(position, currentBookmark);
+            gridAdapter.notifyTranslatedItemChanged(position);
             model.save();
         }
     }
@@ -187,12 +166,12 @@ public class ConfigureActivity extends AppCompatActivity implements AddNewBookma
     }
 
     @Override
-    public void onItemClicked(int edgePosition) {
-        int position = model.getBookmarkForEdgePosition(edgePosition);
-        if (position == -1) {
-            openAddDialog(edgePosition);
+    public void onItemClicked(Position pos) {
+        Bookmark bookmark = model.getBookmark(pos);
+        if (bookmark == null) {
+            openAddDialog(pos);
         } else {
-            openEditActivity(position);
+            openEditActivity(pos);
         }
     }
 }

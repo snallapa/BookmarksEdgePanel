@@ -7,7 +7,6 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
-import android.text.TextUtils;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -33,11 +32,10 @@ import butterknife.OnTextChanged;
 import nallapareddy.com.bookmarksedgepanel.R;
 import nallapareddy.com.bookmarksedgepanel.model.Bookmark;
 import nallapareddy.com.bookmarksedgepanel.model.TileColors;
-import nallapareddy.com.bookmarksedgepanel.tasks.UrlDetailedTask;
 import nallapareddy.com.bookmarksedgepanel.utils.ViewUtils;
 
 
-public class EditBookmarkActivity extends AppCompatActivity implements UrlDetailedTask.onUrlDetailedTaskFinished {
+public class EditBookmarkActivity extends AppCompatActivity {
 
     private final String AD_CODE = "ca-app-pub-3135803015555141~4955511510";
 
@@ -55,8 +53,6 @@ public class EditBookmarkActivity extends AppCompatActivity implements UrlDetail
     EditText edgeBookmarkBackgroundText;
     @BindView(R.id.edge_bookmark_display_background_color)
     Spinner edgeBookmarkBackgroundColor;
-    @BindView(R.id.edge_bookmark_title)
-    EditText edgeBookmarkTitle;
 
     private Bookmark currentBookmark;
     private int currentPosition;
@@ -107,9 +103,6 @@ public class EditBookmarkActivity extends AppCompatActivity implements UrlDetail
         currentBookmark.setShortUrl(edgeBookmarkShortUrl.getText().toString().replace("\n", ""));
         currentBookmark.setColorPosition(edgeBookmarkBackgroundColor.getSelectedItemPosition());
         currentBookmark.setTextOption(edgeBookmarkBackgroundText.getText().toString().replace("\n", ""));
-        String title = edgeBookmarkTitle.getText().toString();
-        currentBookmark.setTitle(title.replace("\n", ""));
-        currentBookmark.setFullInfo(!TextUtils.isEmpty(title));
         Intent data = new Intent();
         data.putExtra(ConfigureActivity.EXTRA_BOOKMARK, Parcels.wrap(currentBookmark));
         data.putExtra(ConfigureActivity.EXTRA_POSITION, currentPosition);
@@ -122,7 +115,6 @@ public class EditBookmarkActivity extends AppCompatActivity implements UrlDetail
         setupTileDisplay();
         edgeBookmarkShortUrl.setText(currentBookmark.getShortUrl());
         edgeBookmarkUrl.setText(currentBookmark.getUri().toString().trim());
-        edgeBookmarkTitle.setText(currentBookmark.getSafeTitle());
         edgeBookmarkDisplayOptions.setSelection(currentBookmark.useFavicon() ? 0 : 1);
         showOptions();
     }
@@ -176,7 +168,8 @@ public class EditBookmarkActivity extends AppCompatActivity implements UrlDetail
 
     @OnClick(R.id.reset_bookmark)
     public void resetBookmark() {
-        new UrlDetailedTask(currentBookmark, currentPosition,this).execute(currentBookmark.getUri());
+        currentBookmark.setUseFavicon(true);
+        updateViews();
     }
 
     @OnItemSelected(R.id.edge_bookmark_display_options)
@@ -192,17 +185,6 @@ public class EditBookmarkActivity extends AppCompatActivity implements UrlDetail
     @OnTextChanged(R.id.edge_bookmark_display_background_text)
     public void onTextChanged() {
         changeImageView();
-    }
-
-    @Override
-    public void retryDetailedTask(Bookmark bookmark, int position) {
-        new UrlDetailedTask(bookmark, position,this).execute(bookmark.getUri());
-    }
-
-    @Override
-    public void finishedTask(int currentPosition) {
-        currentBookmark.setUseFavicon(true);
-        updateViews();
     }
 
     private enum EdgeImageOptions {

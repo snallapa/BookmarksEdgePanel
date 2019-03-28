@@ -14,19 +14,21 @@ import android.widget.Toast;
 
 import butterknife.ButterKnife;
 import nallapareddy.com.bookmarksedgepanel.R;
+import nallapareddy.com.bookmarksedgepanel.model.Position;
 
 public class AddNewBookmarkDialog extends DialogFragment {
     public static String TAG = "bookmark_dialog_tag";
 
     private EditText editText;
-    private int position;
+    private Position pos;
 
-    public static AddNewBookmarkDialog newInstance(int position) {
+    public static AddNewBookmarkDialog newInstance(Position pos) {
         AddNewBookmarkDialog f = new AddNewBookmarkDialog();
 
         // Supply num input as an argument.
         Bundle args = new Bundle();
-        args.putInt("position", position);
+        args.putInt("row", pos.getRow());
+        args.putInt("col", pos.getCol());
         f.setArguments(args);
 
         return f;
@@ -35,7 +37,9 @@ public class AddNewBookmarkDialog extends DialogFragment {
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
-        this.position = getArguments().getInt("position");
+        int row = getArguments().getInt("row");
+        int col = getArguments().getInt("col");
+        this.pos = new Position(row, col);
         builder.setTitle(R.string.add_bookmark_title);
         builder.setNegativeButton(android.R.string.cancel, null);
         builder.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
@@ -54,7 +58,7 @@ public class AddNewBookmarkDialog extends DialogFragment {
     }
 
     public interface onNewBookmarkAddedListener {
-        void newBookmarkAdded(String uri, int edgePosition);
+        void newBookmarkAdded(String uri, Position pos);
     }
 
     private void commit() {
@@ -65,7 +69,7 @@ public class AddNewBookmarkDialog extends DialogFragment {
         }
 
         if (getActivity() instanceof onNewBookmarkAddedListener) {
-            ((onNewBookmarkAddedListener) getActivity()).newBookmarkAdded(urlText, this.position);
+            ((onNewBookmarkAddedListener) getActivity()).newBookmarkAdded(urlText, this.pos);
         } else {
             Log.e("AddNewBookmarkDialog", "Activity does not implement bookmark added listener");
         }

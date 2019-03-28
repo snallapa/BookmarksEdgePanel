@@ -117,12 +117,6 @@
                 android:layout_height="wrap_content"
                 android:layout_marginRight="6dp"
                 android:text="@string/bookmark_title" />
-
-            <EditText
-                android:id="@+id/edge_bookmark_title"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1" />
         </LinearLayout>
 
         <LinearLayout
