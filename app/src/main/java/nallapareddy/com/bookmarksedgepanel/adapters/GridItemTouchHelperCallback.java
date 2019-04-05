@@ -31,8 +31,10 @@ public class GridItemTouchHelperCallback extends ItemTouchHelper.Callback {
 
     @Override
     public boolean isLongPressDragEnabled() {
-        return true;
+        return false;
     }
+
+
 
     public interface ItemTouchHelperAdapter {
 

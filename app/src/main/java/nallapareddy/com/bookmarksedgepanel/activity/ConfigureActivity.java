@@ -2,6 +2,7 @@ package nallapareddy.com.bookmarksedgepanel.activity;
 
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.drawable.Animatable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -10,7 +11,14 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.helper.ItemTouchHelper;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.view.animation.AnimationUtils;
+import android.view.animation.LayoutAnimationController;
 
+import com.crashlytics.android.Crashlytics;
+import com.crashlytics.android.answers.Answers;
+import com.crashlytics.android.answers.CustomEvent;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdView;
 import com.google.android.gms.ads.MobileAds;
@@ -45,6 +53,8 @@ public class ConfigureActivity extends AppCompatActivity implements AddNewBookma
 
     private IBookmarkModel<Bookmark> model;
     private BookmarksGridAdapter gridAdapter;
+    private ItemTouchHelper itemTouchHelper;
+    private Menu menu;
 
     @BindView(R.id.bookmarks_grid_view)
     RecyclerView bookmarksGrid;
@@ -67,13 +77,61 @@ public class ConfigureActivity extends AppCompatActivity implements AddNewBookma
     }
 
     @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.action_bar_configure, menu);
+        this.menu = menu;
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.action_start_edit:
+                switchMode();
+                break;
+            case R.id.action_accept:
+                switchMode();
+                break;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    private void switchMode() {
+        MenuItem accept = menu.findItem(R.id.action_accept);
+        MenuItem edit = menu.findItem(R.id.action_start_edit);
+        if (gridAdapter.inEditMode()) {
+            gridAdapter.toggleEdit();
+            accept.setVisible(true);
+            edit.setVisible(false);
+            Animatable icon = (Animatable) accept.getIcon();
+            icon.start();
+            edit.setIcon(R.drawable.ic_edit_accept_icon);
+            accept.setTitle(R.string.edit_bookmark);
+            model.save();
+        } else {
+            LayoutAnimationController controller =
+                    AnimationUtils.loadLayoutAnimation(this, R.anim.layout_shake);
+            bookmarksGrid.setLayoutAnimation(controller);
+            gridAdapter.toggleEdit();
+            gridAdapter.notifyDataSetChanged();
+            bookmarksGrid.scheduleLayoutAnimation();
+            accept.setVisible(false);
+            edit.setVisible(true);
+            Animatable icon = (Animatable) edit.getIcon();
+            icon.start();
+            accept.setIcon(R.drawable.ic_accept_edit_icon);
+            edit.setTitle(R.string.save_bookmark);
+        }
+    }
+
+    @Override
     protected void attachBaseContext(Context base) {
         super.attachBaseContext(CalligraphyContextWrapper.wrap(base));
     }
 
     private void setupRecyclerView() {
         bookmarksGrid.setHasFixedSize(true);
-        GridLayoutManager gridLayoutManager = new GridLayoutManager(this, 2, LinearLayoutManager.VERTICAL, false);
+        GridLayoutManager gridLayoutManager = new GridLayoutManager(this, BookmarkModel.COLUMNS, LinearLayoutManager.VERTICAL, false);
         bookmarksGrid.setLayoutManager(gridLayoutManager);
         gridAdapter = new BookmarksGridAdapter(model, ROWS, COLUMNS,this);
         bookmarksGrid.setAdapter(gridAdapter);
@@ -82,7 +140,7 @@ public class ConfigureActivity extends AppCompatActivity implements AddNewBookma
 
     private void setupReordering() {
         ItemTouchHelper.Callback callback = new GridItemTouchHelperCallback(gridAdapter);
-        ItemTouchHelper itemTouchHelper = new ItemTouchHelper(callback);
+        this.itemTouchHelper = new ItemTouchHelper(callback);
         itemTouchHelper.attachToRecyclerView(bookmarksGrid);
     }
 
@@ -94,34 +152,13 @@ public class ConfigureActivity extends AppCompatActivity implements AddNewBookma
 
     private void openEditActivity(Position pos) {
         Bookmark bookmark = model.getBookmark(pos);
-//                Answers.getInstance().logCustom(new CustomEvent("Edit Bookmark")
-//                        .putCustomAttribute("Bookmark", bookmark.getUri().toString()));
+                Answers.getInstance().logCustom(new CustomEvent("Edit Bookmark")
+                        .putCustomAttribute("Bookmark", bookmark.getUri().toString()));
         Intent intent = new Intent(ConfigureActivity.this, EditBookmarkActivity.class);
         intent.putExtra(EXTRA_BOOKMARK, Parcels.wrap(bookmark));
         intent.putExtra(EXTRA_POSITION, pos.toString());
         startActivityForResult(intent, REQUEST_CODE);
 
-    }
-
-    private void deleteBookmarks() {
-//        SparseBooleanArray selection = bookmarksAdapter.getSelection();
-//        for (int i = model.size() - 1; i >= 0; i--) {
-//            if (selection.get(i)) {
-//                Bookmark bookmark = model.getBookmark(i);
-//                bookmark.setCanceled(true);
-////                Answers.getInstance().logCustom(new CustomEvent("Delete Bookmark")
-////                        .putCustomAttribute("Bookmark", bookmark.getUri().toString()));
-//                try {
-//                    deleteFile(bookmark.getFileSafe());
-//                } catch (Exception e) {
-//                    Crashlytics.logException(e);
-//                }
-//
-//                model.removeBookmark(i);
-//            }
-//        }
-//        actionMode.finish();
-//        model.save();
     }
 
 
@@ -133,8 +170,8 @@ public class ConfigureActivity extends AppCompatActivity implements AddNewBookma
         }
         gridAdapter.notifyTranslatedItemChanged(pos);
         model.save();
-//        Answers.getInstance().logCustom(new CustomEvent("New Bookmark")
-//                .putCustomAttribute("Bookmark", uri));
+        Answers.getInstance().logCustom(new CustomEvent("New Bookmark")
+                .putCustomAttribute("Bookmark", uri));
     }
 
     @Override
@@ -173,5 +210,25 @@ public class ConfigureActivity extends AppCompatActivity implements AddNewBookma
         } else {
             openEditActivity(pos);
         }
+    }
+
+    @Override
+    public void onItemDeleted(Position pos) {
+        Bookmark bookmark = model.getBookmark(pos);
+        Answers.getInstance().logCustom(new CustomEvent("Delete Bookmark")
+                .putCustomAttribute("Bookmark", bookmark.getUri().toString()));
+        try {
+            deleteFile(bookmark.getFileSafe());
+        } catch (Exception e) {
+            Crashlytics.logException(e);
+        }
+        model.removeBookmark(pos);
+        gridAdapter.notifyTranslatedItemChanged(pos);
+        model.save();
+    }
+
+    @Override
+    public void onItemTouched(RecyclerView.ViewHolder vh) {
+        itemTouchHelper.startDrag(vh);
     }
 }

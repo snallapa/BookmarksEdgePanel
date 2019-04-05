@@ -4,6 +4,7 @@
     <string name="label">Bookmarks Edge</string>
     <string name="add_bookmark">Add</string>
     <string name="save_bookmark">Save</string>
+    <string name="edit_bookmark">Edit List</string>
     <string name="cancel_save_bookmark">Cancel</string>
     <string name="delete_bookmark">Delete</string>
     <string name="add_bookmark_title">Add bookmark</string>
@@ -12,12 +13,11 @@
     <string name="error_url">Invalid URL</string>
     <string name="favicon_error">Favicon could not loaded</string>
     <string name="open_error">Sorry, seems like there was an issue opening the browser. Try a different url or install a different browser</string>
-    <string name="bookmark_url">Bookmark Url:</string>
-    <string name="bookmark_title">Bookmark Title:</string>
-    <string name="bookmark_edge_name">Edge Name:</string>
+    <string name="bookmark_url">Bookmark Url</string>
+    <string name="bookmark_edge_name">Edge Name</string>
     <string name="bookmark_reset">Reset to Default</string>
-    <string name="bookmark_tile_overlay">Overlaid Text:</string>
-    <string name="bookmark_tile_color">Color:</string>
+    <string name="bookmark_tile_overlay">Overlaid Text</string>
+    <string name="bookmark_tile_color">Color</string>
     <string name="banner_ad_unit_id_main">ca-app-pub-3135803015555141/3339177512</string>
     <string name="banner_ad_unit_id_edit">ca-app-pub-3135803015555141/7457992712</string>
 </resources>

@@ -23,4 +23,5 @@
     <color name="light_gray">#E0E0E0</color>
     <color name="brown">#3E2723</color>
     <color name="black">#212121</color>
+    <color name="shadow_black">#363636</color>
 </resources>

@@ -14,14 +14,13 @@ public class BookmarkModel implements IBookmarkModel<Bookmark> {
 
     public BookmarkModel(Context context) {
         this.context = context.getApplicationContext();
-        ModelUtils.convertPreferences(context);
         this.bookmarks = new Bookmark[ROWS][COLUMNS];
-        //bookmarks = ModelUtils.readItems(context);
+        bookmarks = ModelUtils.readGridItems(context);
     }
 
     @Override
     public Bookmark getBookmark(Position pos) {
-        return bookmarks[pos.getRow()][pos.getRow()];
+        return bookmarks[pos.getRow()][pos.getCol()];
     }
 
     @Override
@@ -36,7 +35,7 @@ public class BookmarkModel implements IBookmarkModel<Bookmark> {
 
     @Override
     public void save() {
-        //ModelUtils.writeItems(context, bookmarks);
+        ModelUtils.writeItems(context, bookmarks);
     }
 
     @Override

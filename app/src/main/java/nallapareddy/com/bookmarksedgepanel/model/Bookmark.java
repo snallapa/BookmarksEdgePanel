@@ -13,7 +13,6 @@ public class Bookmark implements Serializable {
     String uri;
     String faviconUrl;
     String shortUrl;
-    boolean tryHttp;
     boolean useFavicon;
     String textOption;
     int colorPosition;
@@ -59,13 +58,14 @@ public class Bookmark implements Serializable {
         return faviconUrl;
     }
 
-    public void setFaviconUrl(String faviconUrl) {
-        this.faviconUrl = faviconUrl;
-    }
-
-    public void setFaviconUrl(Uri uri) {
+    private void setFaviconUrl(Uri uri) {
         String uriString = uri.toString();
         uriString = uriString.replace("http://", "").replace("https://", "");
+        int i = uriString.indexOf("/");
+        if (i != -1) {
+            uriString = uriString.substring(0, i);
+        }
+
         //low quality favicon image faviconUrl = "https://www.google.com/s2/favicons?domain_url=http%3A%2F%2F" + uriString;
         //faviconUrl = "https://www.google.com/s2/favicons?domain_url=http%3A%2F%2F" + uriString;
         //faviconUrl = "https://icons.better-idea.org/icon?url=" + uriString.trim() + "&size=40";
@@ -80,20 +80,12 @@ public class Bookmark implements Serializable {
         this.shortUrl = shortUrl;
     }
 
-    public void setShortUrl(Uri uri) {
+    private void setShortUrl(Uri uri) {
         String uriString = uri.toString();
         uriString = uriString.replace("www.", "").replace("http://", "").replace("https://","");
         if (uriString.contains(".")) {
             shortUrl = uriString.substring(0,uriString.lastIndexOf("."));
         }
-    }
-
-    public boolean isTryHttp() {
-        return tryHttp;
-    }
-
-    public void setTryHttp(boolean tryHttp) {
-        this.tryHttp = tryHttp;
     }
 
     public boolean useFavicon() {
@@ -124,10 +116,6 @@ public class Bookmark implements Serializable {
         return TileColors.values()[colorPosition].getColorId();
     }
 
-    public boolean hasProtocol() {
-        return uri.startsWith("http://") || uri.startsWith("https://");
-    }
-
     public String getTileText() {
         if (TextUtils.isEmpty(getTextOption())) {
             if (TextUtils.isEmpty(getShortUrl())) {
@@ -138,17 +126,5 @@ public class Bookmark implements Serializable {
         } else {
             return getTextOption();
         }
-    }
-
-    @Override
-    public String toString() {
-        shortUrl = shortUrl == null ? "" : shortUrl.replace("\n", "");
-        textOption = textOption == null ? "" : textOption.replace("\n", "");
-        return String.format("%s\n%s\n%s\n%s\n%s\n%s\n%s",
-                uri.trim(),
-                shortUrl.trim(),
-                useFavicon,
-                textOption,
-                colorPosition);
     }
 }

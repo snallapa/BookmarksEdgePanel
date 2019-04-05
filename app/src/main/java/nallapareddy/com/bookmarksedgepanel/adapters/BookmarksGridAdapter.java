@@ -9,12 +9,15 @@ import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
 import android.text.Html;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.crashlytics.android.Crashlytics;
+import com.crashlytics.android.answers.Answers;
+import com.crashlytics.android.answers.CustomEvent;
 import com.squareup.picasso.Picasso;
 import com.squareup.picasso.Target;
 
@@ -35,11 +38,13 @@ public class BookmarksGridAdapter extends RecyclerView.Adapter<BookmarksGridAdap
     private IBookmarkModel<Bookmark> model;
     private OnGridItemClickListener listener;
     private int gridLimit;
+    private boolean editMode;
 
     public BookmarksGridAdapter(IBookmarkModel<Bookmark> model, int rows, int cols, OnGridItemClickListener listener) {
         this.model = model;
         this.listener = listener;
         this.gridLimit = rows * cols;
+        this.editMode = false;
     }
 
     @NonNull
@@ -55,19 +60,25 @@ public class BookmarksGridAdapter extends RecyclerView.Adapter<BookmarksGridAdap
     }
 
     private Position convertToPosition(int i) {
-        int row = i/2;
+        int row = i / 2;
         int col = i % 2;
         return new Position(row, col);
     }
 
     @Override
     public void onBindViewHolder(@NonNull final ItemViewHolder viewHolder, int i) {
-       final Bookmark currentBookmark = model.getBookmark(convertToPosition(i));
+        final Bookmark currentBookmark = model.getBookmark(convertToPosition(i));
+        viewHolder.icon.setTranslationZ(editMode ? 25 : 0);
+
         if (currentBookmark == null) {
             viewHolder.icon.setImageResource(R.drawable.ic_add_pure_black);
             viewHolder.link.setText(R.string.add_bookmark);
+            viewHolder.deleteIcon.setVisibility(View.GONE);
             return;
         }
+        viewHolder.deleteIcon.setVisibility(editMode ? View.VISIBLE : View.GONE);
+
+
         final Context context = viewHolder.icon.getContext();
         final String url = currentBookmark.getUri().toString();
         viewHolder.link.setText(Html.fromHtml(String.format("<a href='%s'>%s</a>", url, url)));
@@ -112,9 +123,9 @@ public class BookmarksGridAdapter extends RecyclerView.Adapter<BookmarksGridAdap
 
                     @Override
                     public void onBitmapFailed(Exception e, Drawable errorDrawable) {
-//                        Answers.getInstance().logCustom(new CustomEvent("Favicon Failed")
-//                                .putCustomAttribute("Bookmark", currentBookmark.getUri().toString())
-//                                .putCustomAttribute("Favicon Url", currentBookmark.getFaviconUrl()));
+                        Answers.getInstance().logCustom(new CustomEvent("Favicon Failed")
+                                .putCustomAttribute("Bookmark", currentBookmark.getUri().toString())
+                                .putCustomAttribute("Favicon Url", currentBookmark.getFaviconUrl()));
                         currentBookmark.setUseFavicon(false);
                         setTileDrawable(viewHolder, currentBookmark);
                     }
@@ -146,42 +157,83 @@ public class BookmarksGridAdapter extends RecyclerView.Adapter<BookmarksGridAdap
         return gridLimit;
     }
 
+    public void toggleEdit() {
+        this.editMode = !this.editMode;
 
+        notifyDataSetChanged();
+    }
+
+    public boolean inEditMode() {
+        return editMode;
+    }
 
     @Override
     public boolean onItemMove(int fromPosition, int toPosition) {
-        Bookmark from = model.getBookmark(convertToPosition(fromPosition));
-        Bookmark to = model.getBookmark(convertToPosition(toPosition));
-        model.setBookmark(convertToPosition(fromPosition), to);
-        model.setBookmark(convertToPosition(toPosition), from);
+        if (fromPosition < toPosition) {
+            for (int i = fromPosition; i < toPosition; i++) {
+                Bookmark from = model.getBookmark(convertToPosition(i));
+                Bookmark to = model.getBookmark(convertToPosition(i+1));
+                model.setBookmark(convertToPosition(i), to);
+                model.setBookmark(convertToPosition(i+1), from);
+            }
+        } else {
+            for (int i = fromPosition; i > toPosition; i--) {
+                Bookmark from = model.getBookmark(convertToPosition(i));
+                Bookmark to = model.getBookmark(convertToPosition(i-1));
+                model.setBookmark(convertToPosition(i), to);
+                model.setBookmark(convertToPosition(i-1), from);
+            }
+        }
         notifyItemMoved(fromPosition, toPosition);
+        Answers.getInstance().logCustom(new CustomEvent("Reordered"));
         return true;
     }
 
-    public class ItemViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
+    public class ItemViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener, View.OnTouchListener {
         @BindView(R.id.bookmark_item_icon)
         ImageView icon;
         @BindView(R.id.bookmark_item_name)
         TextView link;
         @BindView(R.id.bookmark_item_container)
         View container;
-
+        @BindView(R.id.bookmark_item_delete)
+        ImageView deleteIcon;
 
         ItemViewHolder(View itemView) {
             super(itemView);
             ButterKnife.bind(this, itemView);
+            deleteIcon.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    int adapterPosition = getAdapterPosition();
+                    listener.onItemDeleted(convertToPosition(adapterPosition));
+                }
+            });
             container.setOnClickListener(this);
+            container.setOnTouchListener(this);
         }
 
         @Override
         public void onClick(View view) {
             int adapterPosition = getAdapterPosition();
             listener.onItemClicked(convertToPosition(adapterPosition));
+        }
 
+        @Override
+        public boolean onTouch(View view, MotionEvent motionEvent) {
+            if (motionEvent.getActionMasked() ==
+                    MotionEvent.ACTION_DOWN && editMode) {
+                listener.onItemTouched(this);
+            }
+            return false;
         }
     }
 
     public interface OnGridItemClickListener {
         void onItemClicked(Position pos);
+
+        void onItemDeleted(Position pos);
+
+        void onItemTouched(RecyclerView.ViewHolder vh);
     }
 }

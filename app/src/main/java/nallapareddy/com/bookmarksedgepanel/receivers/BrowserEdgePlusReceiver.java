@@ -12,6 +12,8 @@ import android.widget.RemoteViews;
 import android.widget.Toast;
 
 import com.crashlytics.android.Crashlytics;
+import com.crashlytics.android.answers.Answers;
+import com.crashlytics.android.answers.CustomEvent;
 import com.samsung.android.sdk.look.cocktailbar.SlookCocktailManager;
 import com.samsung.android.sdk.look.cocktailbar.SlookCocktailProvider;
 import com.squareup.picasso.Picasso;
@@ -60,7 +62,7 @@ public class BrowserEdgePlusReceiver extends SlookCocktailProvider {
     };
 
     private static int[] singleImageViewId = {R.id.single_edge_row_favicon_1, R.id.single_edge_row_favicon_2, R.id.single_edge_row_favicon_3, R.id.single_edge_row_favicon_4, R.id.single_edge_row_favicon_5, R.id.single_edge_row_favicon_6};
-    private static int[] singleTextViewId = {R.id.single_edge_row_favicon_1, R.id.single_edge_row_favicon_2, R.id.single_edge_row_favicon_3, R.id.single_edge_row_favicon_4, R.id.single_edge_row_favicon_5, R.id.single_edge_row_favicon_6};
+    private static int[] singleTextViewId = {R.id.single_edge_row_uri_1, R.id.single_edge_row_uri_2, R.id.single_edge_row_uri_3, R.id.single_edge_row_uri_4, R.id.single_edge_row_uri_5, R.id.single_edge_row_uri_6};
     private static int[] singleBookmarkId = {R.id.single_bookmark_1, R.id.single_bookmark_2, R.id.single_bookmark_3, R.id.single_bookmark_4, R.id.single_bookmark_5, R.id.single_bookmark_6};
 
     private RemoteViews remoteViews;
@@ -184,8 +186,8 @@ public class BrowserEdgePlusReceiver extends SlookCocktailProvider {
             Bookmark bookmark = model.getBookmark(pos);
             if (bookmark != null) {
 
-//                Answers.getInstance().logCustom(new CustomEvent("Open Bookmark")
-//                        .putCustomAttribute("Bookmark", bookmark.getUri().toString()));
+                Answers.getInstance().logCustom(new CustomEvent("Open Bookmark")
+                        .putCustomAttribute("Bookmark", bookmark.getUri().toString()));
                 Uri currentUri = bookmark.getBrowserUri();
                 try {
                     Intent browserIntent = new Intent(Intent.ACTION_VIEW, currentUri);
