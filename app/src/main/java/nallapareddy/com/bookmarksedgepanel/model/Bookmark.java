@@ -69,7 +69,8 @@ public class Bookmark implements Serializable {
         //low quality favicon image faviconUrl = "https://www.google.com/s2/favicons?domain_url=http%3A%2F%2F" + uriString;
         //faviconUrl = "https://www.google.com/s2/favicons?domain_url=http%3A%2F%2F" + uriString;
         //faviconUrl = "https://icons.better-idea.org/icon?url=" + uriString.trim() + "&size=40";
-        faviconUrl = "http://icons.duckduckgo.com/ip2/" + uriString.trim() + ".ico";
+        faviconUrl = "https://besticon-demo.herokuapp.com/icon?url="+ uriString.trim() +"&size=32..50..120";
+//        faviconUrl = "http://icons.duckduckgo.com/ip2/" + uriString.trim() + ".ico";
     }
 
     public String getShortUrl() {
