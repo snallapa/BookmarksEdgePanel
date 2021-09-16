@@ -8,12 +8,12 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
+import android.os.Bundle;
 import android.widget.RemoteViews;
 import android.widget.Toast;
 
-import com.crashlytics.android.Crashlytics;
-import com.crashlytics.android.answers.Answers;
-import com.crashlytics.android.answers.CustomEvent;
+import com.google.firebase.analytics.FirebaseAnalytics;
+import com.google.firebase.crashlytics.FirebaseCrashlytics;
 import com.samsung.android.sdk.look.cocktailbar.SlookCocktailManager;
 import com.samsung.android.sdk.look.cocktailbar.SlookCocktailProvider;
 import com.squareup.picasso.Picasso;
@@ -113,7 +113,7 @@ public class BrowserEdgePlusReceiver extends SlookCocktailProvider {
                                         outputStream.close();
                                     }
                                 } catch (Exception e) {
-                                    Crashlytics.logException(e);
+                                    FirebaseCrashlytics.getInstance().recordException(e);
                                     e.printStackTrace();
                                 }
                             }
@@ -131,7 +131,7 @@ public class BrowserEdgePlusReceiver extends SlookCocktailProvider {
                         Picasso.get().load(currentBookmark.getFaviconUrl()).into(target);
                     }
                 } catch (Exception e) {
-                    Crashlytics.logException(e);
+                    FirebaseCrashlytics.getInstance().recordException(e);
                     e.printStackTrace();
                 }
             } else {
@@ -185,16 +185,17 @@ public class BrowserEdgePlusReceiver extends SlookCocktailProvider {
             Position pos = Position.fromString(action);
             Bookmark bookmark = model.getBookmark(pos);
             if (bookmark != null) {
-
-                Answers.getInstance().logCustom(new CustomEvent("Open Bookmark")
-                        .putCustomAttribute("Bookmark", bookmark.getUri().toString()));
+                FirebaseAnalytics firebaseAnalytics = FirebaseAnalytics.getInstance(context);
+                Bundle bundle = new Bundle();
+                bundle.putString(FirebaseAnalytics.Param.ITEM_NAME, bookmark.getUri().toString());
+                firebaseAnalytics.logEvent(FirebaseAnalytics.Event.SELECT_ITEM, bundle);
                 Uri currentUri = bookmark.getBrowserUri();
                 try {
                     Intent browserIntent = new Intent(Intent.ACTION_VIEW, currentUri);
                     browserIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                     context.startActivity(browserIntent);
                 } catch (Exception e) {
-                    Crashlytics.logException(e);
+                    FirebaseCrashlytics.getInstance().recordException(e);
                     Toast.makeText(context, R.string.open_error, Toast.LENGTH_LONG).show();
                 }
 

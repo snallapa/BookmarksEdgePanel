@@ -1,15 +1,15 @@
 package nallapareddy.com.bookmarksedgepanel.utils;
 
 
+import static android.content.Context.MODE_PRIVATE;
+
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.text.TextUtils;
 import android.util.Log;
 
-import com.crashlytics.android.Crashlytics;
-import com.crashlytics.android.answers.Answers;
-import com.crashlytics.android.answers.CustomEvent;
+import com.google.firebase.crashlytics.FirebaseCrashlytics;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
@@ -24,8 +24,6 @@ import java.util.List;
 
 import nallapareddy.com.bookmarksedgepanel.model.Bookmark;
 import nallapareddy.com.bookmarksedgepanel.model.BookmarkModel;
-
-import static android.content.Context.MODE_PRIVATE;
 
 public class ModelUtils {
 
@@ -61,7 +59,7 @@ public class ModelUtils {
             return true;
         } catch (Exception e) {
             e.printStackTrace();
-            Crashlytics.logException(e);
+            FirebaseCrashlytics.getInstance().recordException(e);
         }
         return false;
     }
@@ -78,8 +76,6 @@ public class ModelUtils {
             if (success && oldFile.delete()) {
                 conversion = true;
             }
-            Answers.getInstance().logCustom(new CustomEvent("Converted File")
-                    .putCustomAttribute("success", conversion + ""));
             if (!conversion) {
                 return newBookmarks;
             }
@@ -95,7 +91,7 @@ public class ModelUtils {
             return gson.fromJson(json, Bookmark[][].class);
         } catch (Exception e) {
             e.printStackTrace();
-            Crashlytics.logException(e);
+            FirebaseCrashlytics.getInstance().recordException(e);
         }
         return new Bookmark[BookmarkModel.ROWS][BookmarkModel.COLUMNS];
     }
@@ -110,8 +106,6 @@ public class ModelUtils {
             if (oldFile.delete()) {
                 conversion = true;
             }
-            Answers.getInstance().logCustom(new CustomEvent("Converted File")
-                    .putCustomAttribute("success", conversion + ""));
             return bookmarks;
         }
         File bookmarksFile = new File(filesDir, "bookmarks.json");
@@ -125,8 +119,7 @@ public class ModelUtils {
             Type collectionType = new TypeToken<List<Bookmark>>(){}.getType();
             return gson.fromJson(json, collectionType);
         } catch (Exception e) {
-            e.printStackTrace();
-            Crashlytics.logException(e);
+            FirebaseCrashlytics.getInstance().recordException(e);
         }
         return new ArrayList<>();
     }
@@ -161,7 +154,7 @@ public class ModelUtils {
             Log.e("PREFERENCES", "Could not read from file");
             return getBookmarks(context);
         } catch (Exception e) {
-            Crashlytics.logException(e);
+            FirebaseCrashlytics.getInstance().recordException(e);
             if (bookmarksFile.exists()) {
                 bookmarksFile.delete();
             }

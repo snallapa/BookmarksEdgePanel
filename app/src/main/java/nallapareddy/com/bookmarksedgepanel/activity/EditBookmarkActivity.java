@@ -5,8 +5,6 @@ import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
-import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -16,9 +14,15 @@ import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
+
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdView;
 import com.google.android.gms.ads.MobileAds;
+import com.google.android.gms.ads.initialization.InitializationStatus;
+import com.google.android.gms.ads.initialization.OnInitializationCompleteListener;
 import com.squareup.picasso.Picasso;
 import com.squareup.picasso.Target;
 
@@ -37,8 +41,6 @@ import nallapareddy.com.bookmarksedgepanel.utils.ViewUtils;
 
 
 public class EditBookmarkActivity extends AppCompatActivity {
-
-    private final String AD_CODE = "ca-app-pub-3135803015555141~4955511510";
 
     @BindView(R.id.edge_bookmark_display)
     ImageView edgeBookmarkDisplay;
@@ -190,7 +192,7 @@ public class EditBookmarkActivity extends AppCompatActivity {
 
         FAVICON("Favicon"), TILE("Default Tile");
 
-        private String text;
+        private final String text;
 
         EdgeImageOptions(String text) {
             this.text = text;
@@ -203,8 +205,13 @@ public class EditBookmarkActivity extends AppCompatActivity {
     }
 
     private void initializeAds() {
-        MobileAds.initialize(getApplicationContext(), AD_CODE);
-        AdView adView = ButterKnife.findById(this, R.id.adView);
+        MobileAds.initialize(this, new OnInitializationCompleteListener() {
+            @Override
+            public void onInitializationComplete(@NonNull InitializationStatus initializationStatus) {
+
+            }
+        });
+        AdView adView = this.findViewById(R.id.adView);
         AdRequest adRequest = new AdRequest.Builder().build();
         adView.loadAd(adRequest);
     }

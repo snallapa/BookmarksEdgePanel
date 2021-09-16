@@ -12,7 +12,6 @@ import android.view.WindowManager;
 import android.widget.EditText;
 import android.widget.Toast;
 
-import butterknife.ButterKnife;
 import nallapareddy.com.bookmarksedgepanel.R;
 import nallapareddy.com.bookmarksedgepanel.model.Position;
 
@@ -49,7 +48,7 @@ public class AddNewBookmarkDialog extends DialogFragment {
             }
         });
         View view = LayoutInflater.from(getContext()).inflate(R.layout.dialog_add_bookmark, null);
-        editText = ButterKnife.findById(view, R.id.add_bookmark_edittext);
+        editText = view.findViewById(R.id.add_bookmark_edittext);
         builder.setView(view);
         AlertDialog alertDialog = builder.create();
         alertDialog.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE);

@@ -11,10 +11,17 @@
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:supportsRtl="true"
-        android:theme="@style/AppTheme">
+        android:theme="@style/AppTheme"
+        android:fullBackupContent="true">
         <activity
             android:name=".activity.ConfigureActivity"
-            android:launchMode="singleTask"/>
+            android:launchMode="singleTask"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
 
         <activity android:name=".activity.EditBookmarkActivity"
             android:windowSoftInputMode="adjustNothing"/>
@@ -34,9 +41,7 @@
         <meta-data
             android:name="com.samsung.android.cocktail.mode"
             android:value="edge_single_plus" />
-        <meta-data
-            android:name="io.fabric.ApiKey"
-            android:value="dd18e0deed880a81110179cd8e299d94e5b7a815" />
+
         <meta-data
             android:name="com.google.android.gms.ads.APPLICATION_ID"
             android:value="ca-app-pub-3135803015555141~4955511510"/>

@@ -5,8 +5,7 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.Drawable;
-import android.support.annotation.NonNull;
-import android.support.v7.widget.RecyclerView;
+import android.os.Bundle;
 import android.text.Html;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -15,9 +14,11 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.crashlytics.android.Crashlytics;
-import com.crashlytics.android.answers.Answers;
-import com.crashlytics.android.answers.CustomEvent;
+import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.RecyclerView;
+
+import com.google.firebase.analytics.FirebaseAnalytics;
+import com.google.firebase.crashlytics.FirebaseCrashlytics;
 import com.squareup.picasso.Picasso;
 import com.squareup.picasso.Target;
 
@@ -35,9 +36,9 @@ import nallapareddy.com.bookmarksedgepanel.model.Position;
 import nallapareddy.com.bookmarksedgepanel.utils.ViewUtils;
 
 public class BookmarksGridAdapter extends RecyclerView.Adapter<BookmarksGridAdapter.ItemViewHolder> implements GridItemTouchHelperCallback.ItemTouchHelperAdapter {
-    private IBookmarkModel<Bookmark> model;
-    private OnGridItemClickListener listener;
-    private int gridLimit;
+    private final IBookmarkModel<Bookmark> model;
+    private final OnGridItemClickListener listener;
+    private final int gridLimit;
     private boolean editMode;
 
     public BookmarksGridAdapter(IBookmarkModel<Bookmark> model, int rows, int cols, OnGridItemClickListener listener) {
@@ -116,16 +117,18 @@ public class BookmarksGridAdapter extends RecyclerView.Adapter<BookmarksGridAdap
                                 outputStream.close();
                             }
                         } catch (Exception e) {
-                            Crashlytics.logException(e);
+                            FirebaseCrashlytics.getInstance().recordException(e);
                             e.printStackTrace();
                         }
                     }
 
                     @Override
                     public void onBitmapFailed(Exception e, Drawable errorDrawable) {
-                        Answers.getInstance().logCustom(new CustomEvent("Favicon Failed")
-                                .putCustomAttribute("Bookmark", currentBookmark.getUri().toString())
-                                .putCustomAttribute("Favicon Url", currentBookmark.getFaviconUrl()));
+                        Bundle bundle = new Bundle();
+                        bundle.putString(FirebaseAnalytics.Param.ITEM_NAME, currentBookmark.getUri().toString());
+                        bundle.putString(FirebaseAnalytics.Param.CONTENT, currentBookmark.getFaviconUrl());
+                        FirebaseAnalytics firebaseAnalytics = FirebaseAnalytics.getInstance(context);
+                        firebaseAnalytics.logEvent(FirebaseAnalytics.Event.REFUND, bundle);
                         currentBookmark.setUseFavicon(false);
                         setTileDrawable(viewHolder, currentBookmark);
                     }
@@ -184,8 +187,6 @@ public class BookmarksGridAdapter extends RecyclerView.Adapter<BookmarksGridAdap
                 model.setBookmark(convertToPosition(i-1), from);
             }
         }
-        notifyItemMoved(fromPosition, toPosition);
-        Answers.getInstance().logCustom(new CustomEvent("Reordered"));
         return true;
     }
 

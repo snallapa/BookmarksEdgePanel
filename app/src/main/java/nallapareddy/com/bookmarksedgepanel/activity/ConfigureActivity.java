@@ -1,33 +1,44 @@
 package nallapareddy.com.bookmarksedgepanel.activity;
 
+import static nallapareddy.com.bookmarksedgepanel.model.BookmarkModel.COLUMNS;
+import static nallapareddy.com.bookmarksedgepanel.model.BookmarkModel.ROWS;
+
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.drawable.Animatable;
 import android.net.Uri;
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.GridLayoutManager;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.helper.ItemTouchHelper;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.animation.AnimationUtils;
 import android.view.animation.LayoutAnimationController;
 
-import com.crashlytics.android.Crashlytics;
-import com.crashlytics.android.answers.Answers;
-import com.crashlytics.android.answers.CustomEvent;
+import androidx.activity.result.ActivityResult;
+import androidx.activity.result.ActivityResultCallback;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.ItemTouchHelper;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdView;
 import com.google.android.gms.ads.MobileAds;
+import com.google.android.gms.ads.initialization.InitializationStatus;
+import com.google.android.gms.ads.initialization.OnInitializationCompleteListener;
+import com.google.firebase.analytics.FirebaseAnalytics;
+import com.google.firebase.crashlytics.FirebaseCrashlytics;
 import com.samsung.android.sdk.look.Slook;
 
 import org.parceler.Parcels;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import io.github.inflationx.viewpump.ViewPumpContextWrapper;
 import nallapareddy.com.bookmarksedgepanel.R;
 import nallapareddy.com.bookmarksedgepanel.adapters.BookmarksGridAdapter;
 import nallapareddy.com.bookmarksedgepanel.adapters.GridItemTouchHelperCallback;
@@ -36,17 +47,9 @@ import nallapareddy.com.bookmarksedgepanel.model.Bookmark;
 import nallapareddy.com.bookmarksedgepanel.model.BookmarkModel;
 import nallapareddy.com.bookmarksedgepanel.model.IBookmarkModel;
 import nallapareddy.com.bookmarksedgepanel.model.Position;
-import uk.co.chrisjenx.calligraphy.CalligraphyContextWrapper;
-
-import static nallapareddy.com.bookmarksedgepanel.model.BookmarkModel.COLUMNS;
-import static nallapareddy.com.bookmarksedgepanel.model.BookmarkModel.ROWS;
 
 
 public class ConfigureActivity extends AppCompatActivity implements AddNewBookmarkDialog.onNewBookmarkAddedListener, BookmarksGridAdapter.OnGridItemClickListener {
-
-    private final int REQUEST_CODE = 1729;
-
-    private static final String AD_CODE = "ca-app-pub-3135803015555141~4955511510";
 
     static final String EXTRA_BOOKMARK = "extra_bookmark";
     static final String EXTRA_POSITION = "extra_position";
@@ -55,6 +58,8 @@ public class ConfigureActivity extends AppCompatActivity implements AddNewBookma
     private BookmarksGridAdapter gridAdapter;
     private ItemTouchHelper itemTouchHelper;
     private Menu menu;
+    private FirebaseAnalytics firebaseAnalytics;
+    private ActivityResultLauncher<Intent> editLauncher;
 
     @BindView(R.id.bookmarks_grid_view)
     RecyclerView bookmarksGrid;
@@ -65,7 +70,22 @@ public class ConfigureActivity extends AppCompatActivity implements AddNewBookma
         setContentView(R.layout.activity_configure);
         ButterKnife.bind(this);
         initializeAds();
+        firebaseAnalytics = FirebaseAnalytics.getInstance(this);
         model = new BookmarkModel(getApplicationContext());
+        editLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), new ActivityResultCallback<ActivityResult>() {
+            @Override
+            public void onActivityResult(ActivityResult result) {
+                int resultCode = result.getResultCode();
+                Intent data = result.getData();
+                if (resultCode == RESULT_OK && data != null) {
+                    Position position = Position.fromString(data.getStringExtra(EXTRA_POSITION));
+                    Bookmark currentBookmark = Parcels.unwrap(data.getParcelableExtra(EXTRA_BOOKMARK));
+                    model.setBookmark(position, currentBookmark);
+                    gridAdapter.notifyTranslatedItemChanged(position);
+                    model.save();
+                }
+            }
+        });
         setupRecyclerView();
 
         Slook slook = new Slook();
@@ -87,8 +107,6 @@ public class ConfigureActivity extends AppCompatActivity implements AddNewBookma
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.action_start_edit:
-                switchMode();
-                break;
             case R.id.action_accept:
                 switchMode();
                 break;
@@ -126,7 +144,7 @@ public class ConfigureActivity extends AppCompatActivity implements AddNewBookma
 
     @Override
     protected void attachBaseContext(Context base) {
-        super.attachBaseContext(CalligraphyContextWrapper.wrap(base));
+        super.attachBaseContext(ViewPumpContextWrapper.wrap(base));
     }
 
     private void setupRecyclerView() {
@@ -152,13 +170,13 @@ public class ConfigureActivity extends AppCompatActivity implements AddNewBookma
 
     private void openEditActivity(Position pos) {
         Bookmark bookmark = model.getBookmark(pos);
-                Answers.getInstance().logCustom(new CustomEvent("Edit Bookmark")
-                        .putCustomAttribute("Bookmark", bookmark.getUri().toString()));
+        Bundle bundle = new Bundle();
+        bundle.putString(FirebaseAnalytics.Param.ITEM_NAME, bookmark.getUri().toString());
+        firebaseAnalytics.logEvent(FirebaseAnalytics.Event.VIEW_ITEM, bundle);
         Intent intent = new Intent(ConfigureActivity.this, EditBookmarkActivity.class);
         intent.putExtra(EXTRA_BOOKMARK, Parcels.wrap(bookmark));
         intent.putExtra(EXTRA_POSITION, pos.toString());
-        startActivityForResult(intent, REQUEST_CODE);
-
+        editLauncher.launch(intent);
     }
 
 
@@ -170,8 +188,8 @@ public class ConfigureActivity extends AppCompatActivity implements AddNewBookma
         }
         gridAdapter.notifyTranslatedItemChanged(pos);
         model.save();
-        Answers.getInstance().logCustom(new CustomEvent("New Bookmark")
-                .putCustomAttribute("Bookmark", uri));
+        Bundle bundle = new Bundle();
+        firebaseAnalytics.logEvent(FirebaseAnalytics.Event.SHARE, bundle);
     }
 
     @Override
@@ -181,22 +199,13 @@ public class ConfigureActivity extends AppCompatActivity implements AddNewBookma
     }
 
 
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (requestCode != REQUEST_CODE) {
-            return;
-        }
-        if (resultCode == RESULT_OK) {
-            Position position = Position.fromString(data.getStringExtra(EXTRA_POSITION));
-            Bookmark currentBookmark = Parcels.unwrap(data.getParcelableExtra(EXTRA_BOOKMARK));
-            model.setBookmark(position, currentBookmark);
-            gridAdapter.notifyTranslatedItemChanged(position);
-            model.save();
-        }
-    }
-
     private void initializeAds() {
-        MobileAds.initialize(getApplicationContext(), AD_CODE);
+        MobileAds.initialize(this, new OnInitializationCompleteListener() {
+            @Override
+            public void onInitializationComplete(@NonNull InitializationStatus initializationStatus) {
+
+            }
+        });
         AdView adView = findViewById(R.id.adView);
         AdRequest adRequest = new AdRequest.Builder().build();
         adView.loadAd(adRequest);
@@ -215,12 +224,13 @@ public class ConfigureActivity extends AppCompatActivity implements AddNewBookma
     @Override
     public void onItemDeleted(Position pos) {
         Bookmark bookmark = model.getBookmark(pos);
-        Answers.getInstance().logCustom(new CustomEvent("Delete Bookmark")
-                .putCustomAttribute("Bookmark", bookmark.getUri().toString()));
+        Bundle bundle = new Bundle();
+        bundle.putString(FirebaseAnalytics.Param.ITEM_NAME, bookmark.getUri().toString());
+        firebaseAnalytics.logEvent(FirebaseAnalytics.Event.REFUND, bundle);
         try {
             deleteFile(bookmark.getFileSafe());
         } catch (Exception e) {
-            Crashlytics.logException(e);
+            FirebaseCrashlytics.getInstance().recordException(e);
         }
         model.removeBookmark(pos);
         gridAdapter.notifyTranslatedItemChanged(pos);
