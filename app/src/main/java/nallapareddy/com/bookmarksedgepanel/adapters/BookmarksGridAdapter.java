@@ -162,7 +162,6 @@ public class BookmarksGridAdapter extends RecyclerView.Adapter<BookmarksGridAdap
 
     public void toggleEdit() {
         this.editMode = !this.editMode;
-
         notifyDataSetChanged();
     }
 
@@ -178,6 +177,7 @@ public class BookmarksGridAdapter extends RecyclerView.Adapter<BookmarksGridAdap
                 Bookmark to = model.getBookmark(convertToPosition(i+1));
                 model.setBookmark(convertToPosition(i), to);
                 model.setBookmark(convertToPosition(i+1), from);
+                notifyItemMoved(i, i+1);
             }
         } else {
             for (int i = fromPosition; i > toPosition; i--) {
@@ -185,6 +185,7 @@ public class BookmarksGridAdapter extends RecyclerView.Adapter<BookmarksGridAdap
                 Bookmark to = model.getBookmark(convertToPosition(i-1));
                 model.setBookmark(convertToPosition(i), to);
                 model.setBookmark(convertToPosition(i-1), from);
+                notifyItemMoved(i, i-1);
             }
         }
         return true;
@@ -206,7 +207,7 @@ public class BookmarksGridAdapter extends RecyclerView.Adapter<BookmarksGridAdap
             deleteIcon.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    int adapterPosition = getAdapterPosition();
+                    int adapterPosition = getBindingAdapterPosition();
                     listener.onItemDeleted(convertToPosition(adapterPosition));
                 }
             });
@@ -216,7 +217,7 @@ public class BookmarksGridAdapter extends RecyclerView.Adapter<BookmarksGridAdap
 
         @Override
         public void onClick(View view) {
-            int adapterPosition = getAdapterPosition();
+            int adapterPosition = getBindingAdapterPosition();
             listener.onItemClicked(convertToPosition(adapterPosition));
         }
 

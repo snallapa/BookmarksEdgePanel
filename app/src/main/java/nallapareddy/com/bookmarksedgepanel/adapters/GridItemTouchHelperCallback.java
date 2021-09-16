@@ -21,7 +21,7 @@ public class GridItemTouchHelperCallback extends ItemTouchHelper.Callback {
 
     @Override
     public boolean onMove(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, @NonNull RecyclerView.ViewHolder viewHolder1) {
-        return listener.onItemMove(viewHolder.getAdapterPosition(), viewHolder1.getAdapterPosition());
+        return listener.onItemMove(viewHolder.getBindingAdapterPosition(), viewHolder1.getBindingAdapterPosition());
     }
 
     @Override
@@ -33,8 +33,6 @@ public class GridItemTouchHelperCallback extends ItemTouchHelper.Callback {
     public boolean isLongPressDragEnabled() {
         return false;
     }
-
-
 
     public interface ItemTouchHelperAdapter {
 
