@@ -1,14 +1,18 @@
 package nallapareddy.com.bookmarksedgepanel.activity;
 
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.graphics.drawable.Drawable;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Spinner;
@@ -23,10 +27,16 @@ import com.google.android.gms.ads.AdView;
 import com.google.android.gms.ads.MobileAds;
 import com.google.android.gms.ads.initialization.InitializationStatus;
 import com.google.android.gms.ads.initialization.OnInitializationCompleteListener;
-import com.squareup.picasso.Picasso;
-import com.squareup.picasso.Target;
 
 import org.parceler.Parcels;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.net.URL;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -37,10 +47,15 @@ import nallapareddy.com.bookmarksedgepanel.R;
 import nallapareddy.com.bookmarksedgepanel.model.Bookmark;
 import nallapareddy.com.bookmarksedgepanel.model.Position;
 import nallapareddy.com.bookmarksedgepanel.model.TileColors;
+import nallapareddy.com.bookmarksedgepanel.utils.UrlCallback;
+import nallapareddy.com.bookmarksedgepanel.utils.UrlRunner;
 import nallapareddy.com.bookmarksedgepanel.utils.ViewUtils;
 
 
 public class EditBookmarkActivity extends AppCompatActivity {
+
+    private final Executor executor = Executors.newSingleThreadExecutor();
+    private final Handler handler = new Handler(Looper.getMainLooper());
 
     @BindView(R.id.edge_bookmark_display)
     ImageView edgeBookmarkDisplay;
@@ -56,6 +71,8 @@ public class EditBookmarkActivity extends AppCompatActivity {
     EditText edgeBookmarkBackgroundText;
     @BindView(R.id.edge_bookmark_display_background_color)
     Spinner edgeBookmarkBackgroundColor;
+    @BindView(R.id.refresh_icon)
+    Button refreshIconButton;
 
     private Bookmark currentBookmark;
     private Position currentPosition;
@@ -135,9 +152,11 @@ public class EditBookmarkActivity extends AppCompatActivity {
         if (edgeBookmarkDisplayOptions.getSelectedItem() == EdgeImageOptions.FAVICON) {
             edgeBookmarkDisplayOptionsView.setVisibility(View.GONE);
             currentBookmark.setUseFavicon(true);
+            refreshIconButton.setVisibility(View.VISIBLE);
         } else {
             currentBookmark.setUseFavicon(false);
             edgeBookmarkDisplayOptionsView.setVisibility(View.VISIBLE);
+            refreshIconButton.setVisibility(View.GONE);
         }
         changeImageView();
     }
@@ -147,23 +166,19 @@ public class EditBookmarkActivity extends AppCompatActivity {
             TileColors selectedItem = (TileColors) edgeBookmarkBackgroundColor.getSelectedItem();
             edgeBookmarkDisplay.setImageDrawable(ViewUtils.getTileDrawable(getApplicationContext(), edgeBookmarkBackgroundText.getText().toString(), selectedItem.getColorId()));
         } else {
-            Picasso.get().load(currentBookmark.getFaviconUrl()).error(R.drawable.ic_error_outline_black).into(new Target() {
-                @Override
-                public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
-                    edgeBookmarkDisplay.setImageBitmap(bitmap);
+            File fileStreamPath = getFileStreamPath(currentBookmark.getFileSafe());
+            if (fileStreamPath.exists()) {
+                FileInputStream fileInputStream = null;
+                try {
+                    fileInputStream = openFileInput(currentBookmark.getFileSafe());
+                } catch (FileNotFoundException e) {
+                    edgeBookmarkDisplay.setImageResource(R.drawable.ic_prepare);
                 }
-
-                @Override
-                public void onBitmapFailed(Exception e, Drawable errorDrawable) {
-                    edgeBookmarkDisplay.setImageDrawable(errorDrawable);
-                    Toast.makeText(EditBookmarkActivity.this, R.string.favicon_error, Toast.LENGTH_SHORT).show();
-                }
-
-                @Override
-                public void onPrepareLoad(Drawable placeHolderDrawable) {
-
-                }
-            });
+                Bitmap b = BitmapFactory.decodeStream(fileInputStream);
+                edgeBookmarkDisplay.setImageBitmap(b);
+            } else {
+                edgeBookmarkDisplay.setImageResource(R.drawable.ic_prepare);
+            }
         }
     }
 
@@ -171,6 +186,33 @@ public class EditBookmarkActivity extends AppCompatActivity {
     public void resetBookmark() {
         currentBookmark.setUseFavicon(true);
         updateViews();
+    }
+
+    @OnClick(R.id.refresh_icon)
+    public void refreshFavicon() {
+        final Context context = this;
+        Toast.makeText(context, R.string.bookmark_favicon_refreshing, Toast.LENGTH_SHORT).show();
+        URL url = null;
+        try {
+            deleteFile(currentBookmark.getFileSafe()); // delete the old file
+            FileOutputStream fos = openFileOutput(currentBookmark.getFileSafe(), Context.MODE_PRIVATE);
+            executor.execute(new UrlRunner(currentBookmark.getUri().toString(), fos, new UrlCallback() {
+                @Override
+                public void onSuccess() {
+                    handler.post(() -> changeImageView());
+                }
+
+                @Override
+                public void onFailure() {
+                    handler.post(() -> {
+                        Toast.makeText(context, R.string.bookmark_favicon_refresh_error, Toast.LENGTH_LONG).show();
+                        edgeBookmarkDisplay.setImageResource(R.drawable.ic_error_outline_black);
+                    });
+                }
+            }));
+        } catch (FileNotFoundException ignored) {
+
+        }
     }
 
     @OnItemSelected(R.id.edge_bookmark_display_options)

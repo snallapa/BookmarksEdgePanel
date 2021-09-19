@@ -5,7 +5,6 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.Drawable;
-import android.os.Bundle;
 import android.text.Html;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -17,15 +16,9 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.google.firebase.analytics.FirebaseAnalytics;
-import com.google.firebase.crashlytics.FirebaseCrashlytics;
-import com.squareup.picasso.Picasso;
-import com.squareup.picasso.Target;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -97,53 +90,13 @@ public class BookmarksGridAdapter extends RecyclerView.Adapter<BookmarksGridAdap
                 try {
                     fileInputStream = context.openFileInput(currentBookmark.getFileSafe());
                 } catch (FileNotFoundException e) {
-                    currentBookmark.setUseFavicon(false);
-                    setTileDrawable(viewHolder, currentBookmark);
-                    e.printStackTrace();
+                    viewHolder.icon.setImageResource(R.drawable.ic_prepare);
                 }
                 Bitmap b = BitmapFactory.decodeStream(fileInputStream);
                 viewHolder.icon.setImageBitmap(b);
             } else {
-                Target target = new Target() {
-                    @Override
-                    public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
-                        viewHolder.icon.setImageBitmap(bitmap);
-                        try {
-                            String filename = currentBookmark.getFileSafe();
-                            File fileStreamPath = context.getFileStreamPath(filename);
-                            if (!fileStreamPath.exists()) {
-                                FileOutputStream outputStream = context.openFileOutput(filename, Context.MODE_PRIVATE);
-                                bitmap.compress(Bitmap.CompressFormat.PNG, 100, outputStream);
-                                outputStream.close();
-                            }
-                        } catch (Exception e) {
-                            FirebaseCrashlytics.getInstance().recordException(e);
-                            e.printStackTrace();
-                        }
-                    }
-
-                    @Override
-                    public void onBitmapFailed(Exception e, Drawable errorDrawable) {
-                        Bundle bundle = new Bundle();
-                        bundle.putString(FirebaseAnalytics.Param.ITEM_NAME, currentBookmark.getUri().toString());
-                        bundle.putString(FirebaseAnalytics.Param.CONTENT, currentBookmark.getFaviconUrl());
-                        FirebaseAnalytics firebaseAnalytics = FirebaseAnalytics.getInstance(context);
-                        firebaseAnalytics.logEvent(FirebaseAnalytics.Event.REFUND, bundle);
-                        currentBookmark.setUseFavicon(false);
-                        setTileDrawable(viewHolder, currentBookmark);
-                    }
-
-                    @Override
-                    public void onPrepareLoad(Drawable placeHolderDrawable) {
-                        viewHolder.icon.setImageDrawable(placeHolderDrawable);
-                    }
-                };
-                Picasso.get().load(currentBookmark.getFaviconUrl())
-                        .error(R.drawable.ic_error_outline_black)
-                        .placeholder(R.drawable.ic_prepare)
-                        .into(target);
+                viewHolder.icon.setImageResource(R.drawable.ic_prepare);
             }
-
         } else {
             setTileDrawable(viewHolder, currentBookmark);
         }

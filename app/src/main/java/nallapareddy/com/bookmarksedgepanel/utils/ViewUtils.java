@@ -27,8 +27,8 @@ public class ViewUtils {
         if (drawable instanceof BitmapDrawable) {
             return ((BitmapDrawable)drawable).getBitmap();
         }
-        int width = 40;
-        int height = 40;
+        int width = 100;
+        int height = 100;
         Bitmap bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
         Canvas canvas = new Canvas(bitmap);
         drawable.setBounds(0, 0, canvas.getWidth(), canvas.getHeight());

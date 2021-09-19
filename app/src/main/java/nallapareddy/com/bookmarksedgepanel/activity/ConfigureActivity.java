@@ -8,6 +8,8 @@ import android.content.Intent;
 import android.graphics.drawable.Animatable;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -36,6 +38,11 @@ import com.samsung.android.sdk.look.Slook;
 
 import org.parceler.Parcels;
 
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
+
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import io.github.inflationx.viewpump.ViewPumpContextWrapper;
@@ -47,12 +54,19 @@ import nallapareddy.com.bookmarksedgepanel.model.Bookmark;
 import nallapareddy.com.bookmarksedgepanel.model.BookmarkModel;
 import nallapareddy.com.bookmarksedgepanel.model.IBookmarkModel;
 import nallapareddy.com.bookmarksedgepanel.model.Position;
+import nallapareddy.com.bookmarksedgepanel.utils.UrlCallback;
+import nallapareddy.com.bookmarksedgepanel.utils.UrlRunner;
 
 
 public class ConfigureActivity extends AppCompatActivity implements AddNewBookmarkDialog.onNewBookmarkAddedListener, BookmarksGridAdapter.OnGridItemClickListener {
 
     static final String EXTRA_BOOKMARK = "extra_bookmark";
     static final String EXTRA_POSITION = "extra_position";
+
+
+    private final Executor executor = Executors.newFixedThreadPool(COLUMNS * ROWS);
+    private final Handler handler = new Handler(Looper.getMainLooper());
+
 
     private IBookmarkModel<Bookmark> model;
     private BookmarksGridAdapter gridAdapter;
@@ -83,6 +97,23 @@ public class ConfigureActivity extends AppCompatActivity implements AddNewBookma
                     model.setBookmark(position, currentBookmark);
                     gridAdapter.notifyTranslatedItemChanged(position);
                     model.save();
+                    try {
+                        FileOutputStream fos = openFileOutput(currentBookmark.getFileSafe(), Context.MODE_PRIVATE);
+                        executor.execute(new UrlRunner(currentBookmark.getUri().toString(), fos, new UrlCallback() {
+                            @Override
+                            public void onSuccess() {
+                                handler.post(() -> gridAdapter.notifyTranslatedItemChanged(position));
+
+                            }
+
+                            @Override
+                            public void onFailure() {
+                                handler.post(() -> gridAdapter.notifyTranslatedItemChanged(position));
+                            }
+                        }));
+                    } catch (FileNotFoundException ignored) {
+
+                    }
                 }
             }
         });
@@ -184,8 +215,27 @@ public class ConfigureActivity extends AppCompatActivity implements AddNewBookma
     public void newBookmarkAdded(String uri, Position pos) {
         Uri newBookmark = Uri.parse(uri);
         if (newBookmark != null) {
-            model.setBookmark(pos, new Bookmark(newBookmark));
+            Bookmark bookmark = new Bookmark(newBookmark);
+            try {
+                FileOutputStream fos = openFileOutput(bookmark.getFileSafe(), Context.MODE_PRIVATE);
+                executor.execute(new UrlRunner(bookmark.getUri().toString(), fos, new UrlCallback() {
+                    @Override
+                    public void onSuccess() {
+                        handler.post(() -> gridAdapter.notifyTranslatedItemChanged(pos));
+
+                    }
+
+                    @Override
+                    public void onFailure() {
+                        handler.post(() -> gridAdapter.notifyTranslatedItemChanged(pos));
+                    }
+                }));
+            } catch (FileNotFoundException ignored) {
+
+            }
+            model.setBookmark(pos, bookmark);
         }
+
         gridAdapter.notifyTranslatedItemChanged(pos);
         model.save();
         Bundle bundle = new Bundle();
@@ -232,6 +282,7 @@ public class ConfigureActivity extends AppCompatActivity implements AddNewBookma
         } catch (Exception e) {
             FirebaseCrashlytics.getInstance().recordException(e);
         }
+
         model.removeBookmark(pos);
         gridAdapter.notifyTranslatedItemChanged(pos);
         model.save();

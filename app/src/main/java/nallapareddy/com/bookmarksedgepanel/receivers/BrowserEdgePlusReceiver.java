@@ -16,12 +16,9 @@ import com.google.firebase.analytics.FirebaseAnalytics;
 import com.google.firebase.crashlytics.FirebaseCrashlytics;
 import com.samsung.android.sdk.look.cocktailbar.SlookCocktailManager;
 import com.samsung.android.sdk.look.cocktailbar.SlookCocktailProvider;
-import com.squareup.picasso.Picasso;
-import com.squareup.picasso.Target;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 
 import nallapareddy.com.bookmarksedgepanel.R;
 import nallapareddy.com.bookmarksedgepanel.activity.ConfigureActivity;
@@ -99,40 +96,10 @@ public class BrowserEdgePlusReceiver extends SlookCocktailProvider {
                         Bitmap b = BitmapFactory.decodeStream(fileInputStream);
                         remoteViews.setImageViewBitmap(imageViewId, b);
                     } else {
-
-                        Target target = new Target() {
-                            @Override
-                            public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
-                                try {
-                                    remoteViews.setImageViewBitmap(imageViewId, bitmap);
-                                    String filename = currentBookmark.getFileSafe();
-                                    File fileStreamPath = context.getFileStreamPath(filename);
-                                    if (!fileStreamPath.exists()) {
-                                        FileOutputStream outputStream = context.openFileOutput(filename, Context.MODE_PRIVATE);
-                                        bitmap.compress(Bitmap.CompressFormat.PNG, 100, outputStream);
-                                        outputStream.close();
-                                    }
-                                } catch (Exception e) {
-                                    FirebaseCrashlytics.getInstance().recordException(e);
-                                    e.printStackTrace();
-                                }
-                            }
-
-                            @Override
-                            public void onBitmapFailed(Exception e, Drawable errorDrawable) {
-
-                            }
-
-                            @Override
-                            public void onPrepareLoad(Drawable placeHolderDrawable) {
-
-                            }
-                        };
-                        Picasso.get().load(currentBookmark.getFaviconUrl()).into(target);
+                        remoteViews.setImageViewResource(imageViewId, R.drawable.ic_error_outline_black);
                     }
                 } catch (Exception e) {
                     FirebaseCrashlytics.getInstance().recordException(e);
-                    e.printStackTrace();
                 }
             } else {
                 Drawable tileDrawable = ViewUtils.getTileDrawableEdge(context, currentBookmark.getTileText(), currentBookmark.getColorId());
