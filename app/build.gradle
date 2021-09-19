@@ -4,19 +4,14 @@ apply plugin: 'com.google.firebase.crashlytics'
 
 android {
     signingConfigs {
-    debug {
-        storeFile file('/Users/sahith/Documents/Samsung stuff/SlookSDK_v1.4.0/Tools/edge_simulator_v1.4.0/sim_test.jks')
-        keyAlias 'androiddebugkey'
-        keyPassword 'android'
-    }
     }
     compileSdkVersion 31
     defaultConfig {
         applicationId "nallapareddy.com.browseredgepanel"
         minSdkVersion 23
         targetSdkVersion 31
-        versionCode 22
-        versionName "3.3"
+        versionCode 23
+        versionName "4.0"
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
         multiDexEnabled true
 
