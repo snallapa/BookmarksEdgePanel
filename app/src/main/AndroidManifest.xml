@@ -15,13 +15,7 @@
         android:fullBackupContent="true">
         <activity
             android:name=".activity.ConfigureActivity"
-            android:launchMode="singleTask"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
+            android:launchMode="singleTask"/>
 
         <activity android:name=".activity.EditBookmarkActivity"
             android:windowSoftInputMode="adjustNothing"/>
