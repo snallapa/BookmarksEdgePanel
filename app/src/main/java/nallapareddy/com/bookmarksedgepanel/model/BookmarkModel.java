@@ -20,6 +20,9 @@ public class BookmarkModel implements IBookmarkModel<Bookmark> {
 
     @Override
     public Bookmark getBookmark(Position pos) {
+        if (bookmarks == null) {
+            return null;
+        }
         return bookmarks[pos.getRow()][pos.getCol()];
     }
 
@@ -40,6 +43,9 @@ public class BookmarkModel implements IBookmarkModel<Bookmark> {
 
     @Override
     public GridDisplayType getDisplayType() {
+        if (bookmarks == null) {
+            return GridDisplayType.SINGLE_COLUMN;
+        }
         for(int i = 0; i < ROWS; i++) {
             if (bookmarks[i][COLUMNS - 1] != null) {
                 return GridDisplayType.DOUBLE_COLUMN;

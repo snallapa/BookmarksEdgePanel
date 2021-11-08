@@ -3,8 +3,6 @@ apply plugin: 'com.google.gms.google-services'
 apply plugin: 'com.google.firebase.crashlytics'
 
 android {
-    signingConfigs {
-    }
     compileSdkVersion 31
     defaultConfig {
         applicationId "nallapareddy.com.browseredgepanel"
@@ -61,4 +59,5 @@ dependencies {
     implementation files('libs/ico4a-release.aar') // ico file
     testImplementation 'junit:junit:4.12'
 //    implementation files('libs/edge_simulator_v1.4.0.jar') // need to download from internet
+    implementation 'androidx.work:work-runtime-ktx:2.7.0'
 }

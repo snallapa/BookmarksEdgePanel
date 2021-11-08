@@ -60,7 +60,7 @@ public class LinkTag {
     public String imageType() {
         int extensionIndex = href.lastIndexOf(".");
         if (extensionIndex < 0) {
-            return null;
+            return "bs";
         }
         return href.substring(extensionIndex + 1);
     }
@@ -126,7 +126,11 @@ public class LinkTag {
             }
             wholeAttribute = linkTag.substring(index, i);
         }
-        return wholeAttribute.split("=")[1]
+        String[] split = wholeAttribute.split("=");
+        if (split.length != 2) {
+            return null;
+        }
+        return split[1]
                 .replaceAll("[\"']", "")
                 .toLowerCase(Locale.ROOT)
                 .trim();
