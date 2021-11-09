@@ -58,6 +58,9 @@ public class LinkTag {
     }
 
     public String imageType() {
+        if (href == null) {
+            return "bs";
+        }
         int extensionIndex = href.lastIndexOf(".");
         if (extensionIndex < 0) {
             return "bs";

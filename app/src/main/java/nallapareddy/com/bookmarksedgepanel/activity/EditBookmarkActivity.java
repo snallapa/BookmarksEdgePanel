@@ -27,6 +27,7 @@ import com.google.android.gms.ads.AdView;
 import com.google.android.gms.ads.MobileAds;
 import com.google.android.gms.ads.initialization.InitializationStatus;
 import com.google.android.gms.ads.initialization.OnInitializationCompleteListener;
+import com.google.firebase.crashlytics.FirebaseCrashlytics;
 
 import org.parceler.Parcels;
 
@@ -85,7 +86,14 @@ public class EditBookmarkActivity extends AppCompatActivity {
         initializeAds();
         currentBookmark = Parcels.unwrap(getIntent().getParcelableExtra(ConfigureActivity.EXTRA_BOOKMARK));
         String stringPos = getIntent().getStringExtra(ConfigureActivity.EXTRA_POSITION);
-        currentPosition = Position.fromString(stringPos);
+        try {
+            currentPosition = Position.fromString(stringPos);
+        } catch (Exception e) {
+            // we are missing a String extra??
+            FirebaseCrashlytics.getInstance().recordException(e);
+            Toast.makeText(this, "Sorry, this bookmark could not be edited", Toast.LENGTH_LONG).show();
+            finish();
+        }
         updateViews();
     }
 

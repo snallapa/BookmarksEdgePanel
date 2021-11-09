@@ -10,6 +10,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -160,7 +161,7 @@ public class UrlRunner implements Runnable {
                 line = reader.readLine();
             }
             return iconLinks;
-        } catch (IOException e) {
+        } catch (IOException | URISyntaxException e) {
             Log.e("URLRunner", "failed to get icon links " + url.toString(), e);
             return new ArrayList<>();
         }
@@ -173,7 +174,7 @@ public class UrlRunner implements Runnable {
      * @return
      * @throws IOException
      */
-    private static InputStream connectURL(URL url) throws IOException {
+    private static InputStream connectURL(URL url) throws IOException, URISyntaxException {
         HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
         urlConnection.setConnectTimeout(10000); // 10 seconds
         urlConnection.setReadTimeout(10000); // 10 seconds (buffered read prob slower?)
