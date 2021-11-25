@@ -85,6 +85,10 @@ public class UrlRunner implements Runnable {
         String formedUrl = formedURL();
         while (i < iconLinks.size()) {
             LinkTag bestIconTag = iconLinks.get(i);
+            if (bestIconTag.getHref() == null) {
+                //if this tag is missing a href we cant do all that much
+                continue;
+            }
             String imageUrl;
             //try getting the base url and using that (no paths and stuff)
             try {
